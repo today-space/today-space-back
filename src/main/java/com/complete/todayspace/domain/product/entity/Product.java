@@ -1,0 +1,49 @@
+package com.complete.todayspace.domain.product.entity;
+
+import com.complete.todayspace.domain.user.entity.User;
+import com.complete.todayspace.global.entity.AllTimestamp;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "table_product")
+@NoArgsConstructor
+@Getter
+public class Product extends AllTimestamp {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Long price;
+
+    @Column(nullable = false, length = 60)
+    private String title;
+
+    @Column(length = 600)
+    private String content;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Address address;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    public Product(Long id, Long price, String title, String content, Address address, Status status, User user){
+        this.id = id;
+        this.price = price;
+        this.title = title;
+        this.content = content;
+        this.address = address;
+        this.status = status;
+        this.user = user;
+    }
+}

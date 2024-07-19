@@ -1,0 +1,44 @@
+package com.complete.todayspace.domain.user.entity;
+
+import com.complete.todayspace.global.entity.AllTimestamp;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "table_user")
+@Getter
+@NoArgsConstructor
+public class User extends AllTimestamp {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column
+    private String username;
+
+    @Column
+    private String password;
+
+    @Column
+    private String profileImage;
+
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private UserRole role;
+
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private UserState state;
+
+    public User(Long id, String username, String password, String profileImage, UserRole role, UserState state) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.profileImage = profileImage;
+        this.role = role;
+        this.state = state;
+    }
+
+}
