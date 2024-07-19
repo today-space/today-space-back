@@ -31,19 +31,19 @@ public class Product extends AllTimestamp {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private State state;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public Product(Long id, Long price, String title, String content, Address address, Status status, User user){
+    public Product(Long id, Long price, String title, String content, Address address, State state, User user){
         this.id = id;
         this.price = price;
         this.title = title;
         this.content = content;
         this.address = address;
-        this.status = status;
+        this.state = state;
         this.user = user;
     }
 }

@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Status {
+public enum State {
     ON_SALE("ON_SALE"),
     SOLD_OUT("SOLD_OUT");
 
