@@ -7,7 +7,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "table_image_product")
 @Getter
-public class ProductImage extends CreatedTimestamp {
+public class ImageProduct extends CreatedTimestamp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

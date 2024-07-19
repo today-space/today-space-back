@@ -7,7 +7,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "table_image_post")
 @Getter
-public class PostImage extends CreatedTimestamp {
+public class ImagePost extends CreatedTimestamp {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
