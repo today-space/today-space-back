@@ -14,7 +14,7 @@ public class ImageProduct extends CreatedTimestamp {
     private Long id;
 
     @Column
-    private Long order;
+    private Long orders;
 
     @Column
     private String filePath;
