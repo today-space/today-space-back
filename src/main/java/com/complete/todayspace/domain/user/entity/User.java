@@ -25,6 +25,9 @@ public class User extends AllTimestamp {
     private String profileImage;
 
     @Column
+    private String refreshToken;
+
+    @Column
     @Enumerated(value = EnumType.STRING)
     private UserRole role;
 
@@ -40,4 +43,7 @@ public class User extends AllTimestamp {
         this.state = state;
     }
 
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 }
