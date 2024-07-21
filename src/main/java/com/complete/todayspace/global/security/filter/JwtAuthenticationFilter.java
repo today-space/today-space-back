@@ -67,7 +67,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String username = userDetails.getUsername();
         String userRole = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        User user = userRepository.findByUsername(username).orElseThrow( () -> new UsernameNotFoundException("아이디, 비밀번호를 확인해주세요."));
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new UsernameNotFoundException(ErrorCode.CHECK_USERNAME_PASSWORD.getMessage()));
 
         if (user.getState().equals(UserState.LEAVE)) {
 

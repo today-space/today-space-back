@@ -8,14 +8,14 @@ import lombok.Getter;
 @Getter
 public class SignupRequestDto {
 
-    @NotBlank(message = "아이디를 입력해주세요.")
-    @Size(min = 4, max = 20, message = "아이디는 4 ~ 20자 입니다.")
-    @Pattern(regexp = "^[a-z0-9]+$", message = "아이디 형식을 확인해주세요.")
+    @NotBlank
+    @Size(min = 4, max = 20)
+    @Pattern(regexp = "^[a-z0-9]+$")
     private String username;
 
-    @NotBlank(message = "비밀번호를 입력해주세요.")
-    @Size(min = 4, max = 20, message = "비밀번호는 4 ~ 20자 입니다.")
-    @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*]+$", message = "비밀번호 형식을 확인해주세요.")
+    @NotBlank
+    @Size(min = 4, max = 20)
+    @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*]+$")
     private String password;
 
     private String profileImage;
