@@ -9,9 +9,9 @@ public enum ErrorCode {
 
     // Common
     FAIL(500, "실패했습니다."),
-    INVALID_REQUEST(400, "입력값을 확인해주세요.");
+    INVALID_REQUEST(400, "입력값을 확인해주세요."),
     // User
-
+    USER_NOT_UNIQUE(409, "사용 중인 아이디입니다.");
     // Products
 
     // Posts
