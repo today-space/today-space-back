@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1")
@@ -36,6 +33,16 @@ public class UserController {
     public ResponseEntity<StatusResponseDto> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         userService.logout(userDetails.getUser().getId());
+
+        StatusResponseDto response = new StatusResponseDto(SuccessCode.LOGOUT);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/auth")
+    public ResponseEntity<StatusResponseDto> withdrawal(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        userService.withdrawal(userDetails.getUser().getId());
 
         StatusResponseDto response = new StatusResponseDto(SuccessCode.WITHDRAWAL);
 

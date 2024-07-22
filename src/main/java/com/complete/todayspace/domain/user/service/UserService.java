@@ -39,4 +39,13 @@ public class UserService {
 
     }
 
+    @Transactional
+    public void withdrawal(Long id) {
+
+        User user = userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        user.updateRefreshToken(null);
+        user.withdrawal();
+
+    }
+
 }

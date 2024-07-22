@@ -46,4 +46,9 @@ public class User extends AllTimestamp {
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    public void withdrawal() {
+        this.state = UserState.LEAVE;
+    }
+
 }
