@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -71,7 +72,10 @@ public class SecurityConfig {
         http.sessionManagement( (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests( (authorizeHttpRequests) -> authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("**").permitAll()
+                        .requestMatchers("/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/check").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/v1/products", "/v1/products**", "/v1/products/*",
+                                "/v1/posts", "/v1/posts/hashtags**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling( (exceptionHandling) -> {
                     exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint);
