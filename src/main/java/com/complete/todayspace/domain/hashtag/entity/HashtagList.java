@@ -13,7 +13,7 @@ public class HashtagList extends CreatedTimestamp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(length = 30, unique = true)
     private String hashtagName;
 
 }

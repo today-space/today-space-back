@@ -15,7 +15,7 @@ public class Review extends CreatedTimestamp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(length = 300)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

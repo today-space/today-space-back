@@ -15,7 +15,7 @@ public class User extends AllTimestamp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(unique = true, length = 40)
     private String username;
 
     @Column

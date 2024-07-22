@@ -14,7 +14,7 @@ public class Post extends AllTimestamp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(length = 600)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
