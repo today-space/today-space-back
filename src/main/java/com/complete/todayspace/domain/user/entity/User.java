@@ -32,8 +32,7 @@ public class User extends AllTimestamp {
     @Enumerated(value = EnumType.STRING)
     private UserState state;
 
-    public User(Long id, String username, String password, String profileImage, UserRole role, UserState state) {
-        this.id = id;
+    public User(String username, String password, String profileImage, UserRole role, UserState state) {
         this.username = username;
         this.password = password;
         this.profileImage = profileImage;
