@@ -5,6 +5,8 @@ import com.complete.todayspace.domain.user.service.UserService;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,9 +26,9 @@ public class UserController {
 
         userService.signup(requestDto);
 
-        StatusResponseDto response = new StatusResponseDto(SuccessCode.SIGNUP_CREATE);
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SIGNUP_CREATE);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
     @PostMapping("/auth/logout")
@@ -34,9 +36,9 @@ public class UserController {
 
         userService.logout(userDetails.getUser().getId());
 
-        StatusResponseDto response = new StatusResponseDto(SuccessCode.LOGOUT);
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.LOGOUT);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/auth")
@@ -44,9 +46,19 @@ public class UserController {
 
         userService.withdrawal(userDetails.getUser().getId());
 
-        StatusResponseDto response = new StatusResponseDto(SuccessCode.WITHDRAWAL);
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.WITHDRAWAL);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<StatusResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
+        userService.refreshToken(request, response);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.TOKEN_REFRESH);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }
