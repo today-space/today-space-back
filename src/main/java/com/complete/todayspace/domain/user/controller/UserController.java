@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.user.controller;
 
+import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.service.UserService;
 import com.complete.todayspace.global.dto.StatusResponseDto;
@@ -57,6 +58,16 @@ public class UserController {
         userService.refreshToken(request, response);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.TOKEN_REFRESH);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/auth/check")
+    public ResponseEntity<StatusResponseDto> checkUsername(@Valid @RequestBody CheckUsernameRequestDto requestDto) {
+
+        userService.checkUsername(requestDto);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.CHECK_USERNAME);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }

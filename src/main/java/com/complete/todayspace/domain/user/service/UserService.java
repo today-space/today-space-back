@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.user.service;
 
+import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
@@ -92,6 +93,12 @@ public class UserService {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
+    }
+
+    public void checkUsername(CheckUsernameRequestDto requestDto) {
+        if (userRepository.existsByUsername(requestDto.getUsername())) {
+            throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
+        }
     }
 
 }
