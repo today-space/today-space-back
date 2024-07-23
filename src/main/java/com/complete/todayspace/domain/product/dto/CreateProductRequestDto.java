@@ -9,19 +9,20 @@ import org.hibernate.validator.constraints.Length;
 
 @Getter
 public class CreateProductRequestDto {
-	@NotBlank
-	@Length(max = 60)
-	private String title;
 
-	@NotNull
-	private Long price;
+    @NotBlank
+    @Length(max = 60)
+    private String title;
 
-	@NotBlank
-	@Length(max = 600)
-	private String content;
+    @NotNull
+    private Long price;
 
-	private Address address;
+    @NotBlank
+    @Length(max = 600)
+    private String content;
 
-	private State state;
+    private Address address;
+
+    private State state;
 }
 

@@ -26,26 +26,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductController {
 
-	private final ProductService productService;
+    private final ProductService productService;
 
-	@PostMapping("/products")
-	public ResponseEntity<StatusResponseDto> createProduct(
-		@AuthenticationPrincipal UserDetailsImpl userDetails,
-		@Valid @RequestBody CreateProductRequestDto requestDto
-	){
-		productService.createProduct(userDetails.getUser(),requestDto);
-		StatusResponseDto response = new StatusResponseDto (SuccessCode.PRODUCTS_CREATE);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
+    @PostMapping("/products")
+    public ResponseEntity<StatusResponseDto> createProduct(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Valid @RequestBody CreateProductRequestDto requestDto
+    ) {
+        productService.createProduct(userDetails.getUser(), requestDto);
+        StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_CREATE);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 
-	@PutMapping("/products/{productsId}")
-	public ResponseEntity<StatusResponseDto> editProduct(
-		@AuthenticationPrincipal UserDetailsImpl userDetails,
-		@PathVariable Long productsId,
-		@Valid @RequestBody EditProductRequestDto requestDto
-	){
-		productService.editProduct(userDetails.getUser().getId(), productsId, requestDto);
-		StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PRODUCTS_UPDATE);
-		return new ResponseEntity<>(responseDto,HttpStatus.OK);
-	}
+    @PutMapping("/products/{productsId}")
+    public ResponseEntity<StatusResponseDto> editProduct(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long productsId,
+        @Valid @RequestBody EditProductRequestDto requestDto
+    ) {
+        productService.editProduct(userDetails.getUser().getId(), productsId, requestDto);
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PRODUCTS_UPDATE);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
 }

@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.Length;
 
 @Getter
 public class EditProductRequestDto {
+
     @NotBlank
     @Length(max = 60)
     private String title;
