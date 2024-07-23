@@ -2,6 +2,7 @@ package com.complete.todayspace.domain.product.service;
 
 import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
+import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.user.entity.User;
@@ -44,6 +45,14 @@ public class ProductService {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
         productRepository.delete(product);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponseDto getProduct(Long productsId) {
+        Product product = findByProduct(productsId);
+        return new ProductResponseDto(product.getId(), product.getUser().getUsername(),
+            product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
+            product.getState(), product.getUpdatedAt());
     }
 
     public Product findByProduct(Long productId) {
