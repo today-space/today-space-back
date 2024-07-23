@@ -67,8 +67,7 @@ public class ProductController {
         @PathVariable Long productsId
     ) {
         ProductResponseDto responseDto = productService.getProduct(productsId);
-        DataResponseDto<ProductResponseDto> product = new DataResponseDto<>(200,
-            SuccessCode.POSTS_GET.getMessage(), responseDto);
+        DataResponseDto<ProductResponseDto> product = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 }
