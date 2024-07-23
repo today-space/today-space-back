@@ -29,10 +29,10 @@ public class ProductService {
 
     @Transactional
     public void editProduct(Long id, Long productsId, EditProductRequestDto requestDto) {
+        Product product = findByProduct(productsId);
         if (!isProductOwner(productsId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
-        Product product = findByProduct(productsId);
         product.updateProduct(requestDto.getPrice(), requestDto.getTitle(), requestDto.getContent(),
             requestDto.getAddress(), requestDto.getState());
     }
