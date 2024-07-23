@@ -51,7 +51,8 @@ public class ProductService {
     public ProductResponseDto getProduct(Long productsId) {
         Product product = findByProduct(productsId);
         return new ProductResponseDto(product.getId(), product.getUser().getUsername(),
-            product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(), product.getState(), product.getUpdatedAt());
+            product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
+            product.getState(), product.getUpdatedAt());
     }
 
     public Product findByProduct(Long productId) {
