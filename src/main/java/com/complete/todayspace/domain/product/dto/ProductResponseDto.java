@@ -10,6 +10,7 @@ import lombok.Getter;
 public class ProductResponseDto {
 
     private final Long id;
+    private final String userName;
     private final Long price;
     private final String title;
     private final String content;
@@ -17,9 +18,10 @@ public class ProductResponseDto {
     private final State state;
     private final LocalDateTime upDateAt;
 
-    public ProductResponseDto(Long id, Long price, String title, String content, Address address,
-        State state, LocalDateTime upDateAt) {
+    public ProductResponseDto(Long id, String userName, Long price, String title, String content,
+        Address address, State state, LocalDateTime upDateAt) {
         this.id = id;
+        this.userName = userName;
         this.price = price;
         this.title = title;
         this.content = content;
