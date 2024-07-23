@@ -46,4 +46,13 @@ public class Product extends AllTimestamp {
         this.state = state;
         this.user = user;
     }
+
+    public Product(String title, Long price, String content, Address address, State state, User user) {
+        this.price = price;
+        this.title = title;
+        this.content = content;
+        this.address = address;
+        this.state = state;
+        this.user = user;
+    }
 }

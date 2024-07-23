@@ -25,7 +25,7 @@ public enum SuccessCode {
     COMMENT_DELETE(204, "댓글 삭제 성공"),
     LIKES_CREATE(200, "좋아요 추가 성공"),
     LIKES_DELETE(204, "좋아요 삭제 성공"),
-    PRODUCTS_CREATE(200, "상품 판매글 추가 성공"),
+    PRODUCTS_CREATE(201, "상품 판매글 추가 성공"),
     PRODUCTS_GET(200, "상품 판매글 조회 성공"),
     PRODUCTS_DETAIL(200, "상품 판매글 단건 조회 성공"),
     PRODUCTS_UPDATE(200, "상품 판매글 수정 성공"),
