@@ -18,6 +18,7 @@ public enum ErrorCode {
     CHECK_USERNAME_PASSWORD(400, "아이디, 비밀번호를 확인해주세요."),
     USER_NOT_FOUND(400, "해당 유저를 찾을 수 없습니다."),
     // Products
+    PRODUCT_NOT_FOUND(404,"해당하는 상품이 없습니다."),
 
     // Posts
 
