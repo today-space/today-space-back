@@ -10,7 +10,7 @@ public enum SuccessCode {
     SIGNUP_CREATE(201, "회원가입 성공"),
     LOGIN(200, "로그인 성공"),
     LOGOUT(200, "로그아웃 성공"),
-    WITHDRAWAL(200, "로그아웃 성공"),
+    WITHDRAWAL(200, "회원탈퇴 성공"),
     TOKEN_REFRESH(200, "토큰 재발급 성공"),
     CHECK_USERNAME(200, "사용 가능한 아이디입니다"),
     PROFILE_GET(200, "프로필 조회 성공"),
