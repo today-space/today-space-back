@@ -27,7 +27,9 @@ public enum ErrorCode {
 
     // JWT
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),
-    INVALID_TOKEN(401, "잘못된 JWT 토큰입니다.");
+    INVALID_TOKEN(401, "잘못된 JWT 토큰입니다."),
+    TOKEN_MISMATCH(401, "토큰이 일치하지 않습니다."),
+    TOKEN_NOT_FOUND_FOR_COOKIE(401, "쿠키에 토큰이 존재하지 않습니다.");;
 
     private final Integer statusCode;
     private final String message;
