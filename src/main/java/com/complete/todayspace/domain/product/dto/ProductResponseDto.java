@@ -16,13 +16,13 @@ public class ProductResponseDto {
     private final State state;
     private final LocalDateTime upDateAt;
 
-    public ProductResponseDto(Product product){
-        this.id = product.getId();
-        this.price = product.getPrice();
-        this.title = product.getTitle();
-        this.content = product.getContent();
-        this.address = product.getAddress();
-        this.state = product.getState();
-        this.upDateAt = product.getUpdatedAt();
+    public ProductResponseDto(Long id, Long price, String title, String content, Address address, State state, LocalDateTime upDateAt){
+        this.id = id;
+        this.price = price;
+        this.title = title;
+        this.content = content;
+        this.address = address;
+        this.state = state;
+        this.upDateAt = upDateAt;
     }
 }
