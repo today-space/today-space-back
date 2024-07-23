@@ -4,4 +4,6 @@ import com.complete.todayspace.domain.product.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    boolean existsByIdAndUserId(Long productId, Long userId);
 }

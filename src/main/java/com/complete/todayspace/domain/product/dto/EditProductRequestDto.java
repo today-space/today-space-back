@@ -8,7 +8,7 @@ import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 
 @Getter
-public class CreateProductRequestDto {
+public class EditProductRequestDto {
 
     @NotBlank
     @Length(max = 60)
@@ -25,4 +25,3 @@ public class CreateProductRequestDto {
 
     private State state;
 }
-
