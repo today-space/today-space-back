@@ -27,7 +27,10 @@ public class ProductService {
     }
 
     @Transactional
-    public void editProduct(Long productsId, EditProductRequestDto requestDto) {
+    public void editProduct(Long id, Long productsId, EditProductRequestDto requestDto) {
+        if(!isProductOwner(productsId,id)){
+            throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
+        }
         Product product = findByProduct(productsId);
         product.updateProduct(requestDto.getPrice(), requestDto.getTitle(), requestDto.getContent(),
             requestDto.getAddress(), requestDto.getState());
@@ -38,4 +41,9 @@ public class ProductService {
             () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
         );
     }
+
+    private boolean isProductOwner(Long productId, Long userId) {
+        return productRepository.existsByIdAndUserId(productId,userId);
+    }
 }
+

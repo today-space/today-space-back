@@ -4,6 +4,7 @@ import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,7 +44,7 @@ public class ProductController {
 		@PathVariable Long productsId,
 		@Valid @RequestBody EditProductRequestDto requestDto
 	){
-		productService.editProduct(productsId, requestDto);
+		productService.editProduct(userDetails.getUser().getId(), productsId, requestDto);
 		StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PRODUCTS_UPDATE);
 		return new ResponseEntity<>(responseDto,HttpStatus.OK);
 	}
