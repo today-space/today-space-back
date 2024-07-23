@@ -37,6 +37,15 @@ public class ProductService {
             requestDto.getAddress(), requestDto.getState());
     }
 
+    @Transactional
+    public void deleteProduct(Long id, Long productsId) {
+        Product product = findByProduct(productsId);
+        if (!isProductOwner(productsId, id)) {
+            throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
+        }
+        productRepository.delete(product);
+    }
+
     public Product findByProduct(Long productId) {
         return productRepository.findById(productId).orElseThrow(
             () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
