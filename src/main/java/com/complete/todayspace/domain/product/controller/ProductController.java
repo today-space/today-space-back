@@ -81,7 +81,7 @@ public class ProductController {
 
     @GetMapping("/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
-        @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(defaultValue = "all") String condition,
         @RequestParam(required = false) String conditionDetail
 
