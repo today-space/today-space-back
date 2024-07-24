@@ -82,16 +82,16 @@ public class ProductController {
     @GetMapping("/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-        @RequestParam(defaultValue = "all") String A,
-        @RequestParam(required = false) String B
+        @RequestParam(defaultValue = "all") String condition,
+        @RequestParam(required = false) String conditionDetail
 
     ) {
         Page<ProductResponseDto> responseDto;
 
-        if (A.equals("search")) {
-            responseDto = productService.getProductSearch(pageable, B);
-        } else if (A.equals("address")) {
-            responseDto = productService.getProductAddress(pageable, B);
+        if (condition.equals("search")) {
+            responseDto = productService.getProductSearch(pageable, conditionDetail);
+        } else if (condition.equals("address")) {
+            responseDto = productService.getProductAddress(pageable, conditionDetail);
         } else {
             responseDto = productService.getProductPage(pageable);
         }
