@@ -9,6 +9,7 @@ import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +55,7 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long postId,
+            @PathVariable @Min(1) Long postId,
             @Valid @RequestBody EditPostRequestDto requestDto
     ) {
         postService.editPost(userDetails.getUser().getId(), postId, requestDto);

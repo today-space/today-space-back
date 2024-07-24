@@ -23,7 +23,6 @@ public class PostService {
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto) {
         Post savePost = new Post(requestDto.getContent(), user);
-
         postRepository.save(savePost);
     }
 
@@ -35,15 +34,9 @@ public class PostService {
 
     @Transactional
     public void editPost(Long userId, Long postId, EditPostRequestDto requestDto) {
-        Post post = findByPost(postId);
-        if (!isPostOwner(postId, userId)) {
-            throw new CustomException(ErrorCode.NOT_OWNER_POST);
-        }
+        Post post = postRepository.findByIdAndUserId(postId, userId).orElseThrow(
+                () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
-    }
-
-    private Post findByPost(Long postId) {
-        return postRepository.findById(postId).orElse(null);
     }
 
     private boolean isPostOwner(Long postId, Long userId) {
