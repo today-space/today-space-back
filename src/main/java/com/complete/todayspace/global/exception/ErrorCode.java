@@ -22,6 +22,8 @@ public enum ErrorCode {
     NOT_OWNER_PRODUCT(403, "작성자만 변경할 수 있습니다."),
 
     // Posts
+    POST_NOT_FOUND(404,"해당 상품을 찾을 수 없습니다."),
+    NOT_OWNER_POST(403, "작성자만 변경할 수 있습니다."),
 
     // Hastags
 
