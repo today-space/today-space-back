@@ -1,8 +1,13 @@
 package com.complete.todayspace.domain.product.controller;
 
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
+import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
@@ -63,11 +69,37 @@ public class ProductController {
     }
 
     @GetMapping("/products/{productsId}")
-    public ResponseEntity<DataResponseDto<ProductResponseDto>> getProduct(
+    public ResponseEntity<DataResponseDto<ProductDetailResponseDto>> getProduct(
         @PathVariable Long productsId
     ) {
-        ProductResponseDto responseDto = productService.getProduct(productsId);
-        DataResponseDto<ProductResponseDto> product = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+        ProductDetailResponseDto responseDto = productService.getProduct(productsId);
+        DataResponseDto<ProductDetailResponseDto> product = new DataResponseDto<>(
+            SuccessCode.POSTS_GET, responseDto);
+        return new ResponseEntity<>(product, HttpStatus.OK);
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
+        @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @RequestParam(value = "search", required = false) String search,
+        @RequestParam(value = "region", required = false) String region
+
+    ) {
+        Page<ProductResponseDto> responseDto;
+
+        if (search != null && region == null) {
+            responseDto = productService.getProductSearch(pageable, search);
+        } else if (region != null && search == null) {
+            responseDto = productService.getProductRegion(pageable, region);
+        } else if (search != null && region != null) {
+            responseDto = productService.getProductSearchRegion(pageable, search, region);
+        } else {
+            responseDto = productService.getProductPage(pageable);
+        }
+
+        DataResponseDto<Page<ProductResponseDto>> product = new DataResponseDto<>(
+            SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 }
+
