@@ -85,7 +85,7 @@ public class ProductService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Page<Product> page = productRepository.findAllByAddress(pageable, address);
+        Page<Product> page = productRepository.findAllByAddress(pageable, Address.valueOf(address));
         return page.map(product -> new ProductResponseDto(
             product.getId(),
             product.getPrice(),

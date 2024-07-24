@@ -10,7 +10,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByIdAndUserId(Long productId, Long userId);
 
-    Page<Product> findAllByAddress(Pageable pageable, String address);
+    Page<Product> findAllByAddress(Pageable pageable, Address address);
 
     Page<Product> findProductsByTitleLike(Pageable pageable, String search);
 }
