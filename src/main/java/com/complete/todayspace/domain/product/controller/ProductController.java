@@ -3,7 +3,6 @@ package com.complete.todayspace.domain.product.controller;
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
-import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -82,16 +81,18 @@ public class ProductController {
     @GetMapping("/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
-        @RequestParam(defaultValue = "all") String condition,
-        @RequestParam(required = false) String conditionDetail
+        @RequestParam(value = "search", required = false) String search,
+        @RequestParam(value = "region", required = false) String region
 
     ) {
         Page<ProductResponseDto> responseDto;
 
-        if (condition.equals("search")) {
-            responseDto = productService.getProductSearch(pageable, conditionDetail);
-        } else if (condition.equals("address")) {
-            responseDto = productService.getProductAddress(pageable, conditionDetail);
+        if (search != null && region == null) {
+            responseDto = productService.getProductSearch(pageable, search);
+        } else if (region != null && search == null) {
+            responseDto = productService.getProductRegion(pageable, region);
+        } else if (search != null && region != null) {
+            responseDto = productService.getProductSearchRegion(pageable, search, region);
         } else {
             responseDto = productService.getProductPage(pageable);
         }
