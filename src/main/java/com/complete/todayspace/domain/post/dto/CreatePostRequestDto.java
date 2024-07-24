@@ -6,6 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class CreatePostRequestDto {
+
     @NotBlank
     @Size(max = 600)
     private String content;

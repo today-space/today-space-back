@@ -27,8 +27,8 @@ public class PostController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid @RequestBody CreatePostRequestDto requestDto
     ) {
-      postService.createPost(userDetails.getUser(), requestDto);
-      StatusResponseDto response = new StatusResponseDto(SuccessCode.POSTS_CREATE);
-      return new ResponseEntity<>(response, HttpStatus.CREATED);
+        postService.createPost(userDetails.getUser(), requestDto);
+        StatusResponseDto response = new StatusResponseDto(SuccessCode.POSTS_CREATE);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

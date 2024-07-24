@@ -27,5 +27,4 @@ public class Post extends AllTimestamp {
         this.content = content;
         this.user = user;
     }
-
 }
