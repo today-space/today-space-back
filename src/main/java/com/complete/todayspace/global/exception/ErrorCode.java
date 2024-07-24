@@ -21,7 +21,10 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(404, "해당 상품을 찾을 수 없습니다."),
     NOT_OWNER_PRODUCT(403, "작성자만 변경할 수 있습니다."),
     //Review
-    DUPLICATE_REVIEW(409, "이미 작성된 후기글이 있습니다. "),
+    DUPLICATE_REVIEW(409, "이미 작성된 후기글이 있습니다."),
+    //Wish
+    DUPLICATE_WISH(409, "이미 찜한 상품입니다."),
+    CANNOT_ADD_WISH(400, "본인 상품에는 찜 할 수 없습니다."),
 
     // Posts
 
