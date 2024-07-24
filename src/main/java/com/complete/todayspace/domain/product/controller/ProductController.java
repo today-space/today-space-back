@@ -91,7 +91,7 @@ public class ProductController {
         if (A.equals("search")) {
             responseDto = productService.getProductSearch(pageable, B);
         } else if (A.equals("address")) {
-            responseDto = productService.getProductAddress(pageable, Address.valueOf(B));
+            responseDto = productService.getProductAddress(pageable, B);
         } else {
             responseDto = productService.getProductPage(pageable);
         }

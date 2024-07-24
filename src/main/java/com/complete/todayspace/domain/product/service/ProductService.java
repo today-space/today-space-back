@@ -79,18 +79,20 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getProductAddress(Pageable pageable, Address address) {
+    public Page<ProductResponseDto> getProductAddress(Pageable pageable, String address) {
 
-        Page<Product> Page = productRepository.findAllByAddress(pageable, address);
-        if (Page.isEmpty()) {
+        if (!isAddressValid(address)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
-        return Page.map(product -> new ProductResponseDto(
+
+        Page<Product> page = productRepository.findAllByAddress(pageable, address);
+        return page.map(product -> new ProductResponseDto(
             product.getId(),
             product.getPrice(),
             product.getTitle()
         ));
     }
+
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductPage(Pageable pageable) {
@@ -106,6 +108,15 @@ public class ProductService {
         ));
     }
 
+    private boolean isAddressValid(String address) {
+        for (Address addressString : Address.values()) {
+            if (addressString.name().equalsIgnoreCase(address)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Product findByProduct(Long productId) {
         return productRepository.findById(productId).orElseThrow(
             () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
@@ -115,6 +126,5 @@ public class ProductService {
     private boolean isProductOwner(Long productId, Long userId) {
         return productRepository.existsByIdAndUserId(productId, userId);
     }
-
 }
 
