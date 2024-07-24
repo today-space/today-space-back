@@ -68,6 +68,9 @@ public class ProductService {
     public Page<ProductResponseDto> getProductSearch(Pageable pageable, String search) {
 
         Page<Product> Page = productRepository.findProductsByTitleLike(pageable, search);
+        if (Page.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
         return Page.map(product -> new ProductResponseDto(
             product.getId(),
             product.getPrice(),
@@ -79,6 +82,9 @@ public class ProductService {
     public Page<ProductResponseDto> getProductAddress(Pageable pageable, Address address) {
 
         Page<Product> Page = productRepository.findAllByAddress(pageable, address);
+        if (Page.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
         return Page.map(product -> new ProductResponseDto(
             product.getId(),
             product.getPrice(),
@@ -90,6 +96,9 @@ public class ProductService {
     public Page<ProductResponseDto> getProductPage(Pageable pageable) {
 
         Page<Product> Page = productRepository.findAll(pageable);
+        if (Page.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
         return Page.map(product -> new ProductResponseDto(
             product.getId(),
             product.getPrice(),
