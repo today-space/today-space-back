@@ -1,21 +1,8 @@
 # Use an official OpenJDK runtime as a parent image
 FROM openjdk:17-jdk-slim
 
-# Install necessary tools
-RUN apt-get update && apt-get install -y git wget unzip
-
 # Set the working directory in the container
 WORKDIR /app
-
-# Copy the build.gradle, settings.gradle and Gradle wrapper
-COPY build.gradle settings.gradle gradlew ./
-COPY gradle ./gradle
-
-# Copy the source code
-COPY src ./src
-
-# Build the project
-RUN ./gradlew clean build
 
 # Copy the project’s build artifact (JAR file) to the container
 COPY build/libs/*.jar app.jar
