@@ -30,4 +30,7 @@ public abstract class AllTimestamp {
         }
     }
 
+    public void updateUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
