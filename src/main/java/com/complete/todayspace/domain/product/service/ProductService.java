@@ -46,6 +46,16 @@ public class ProductService {
     }
 
     @Transactional
+    public void updateProduct(Long id, Long productsId) {
+        Product product = findByProduct(productsId);
+        if (!isProductOwner(productsId, id)) {
+            throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
+        }
+        product.updateUpdatedAt();
+        productRepository.save(product);
+    }
+
+    @Transactional
     public void deleteProduct(Long id, Long productsId) {
 
         Product product = findByProduct(productsId);
