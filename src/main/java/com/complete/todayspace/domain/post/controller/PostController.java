@@ -18,14 +18,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1")
@@ -73,4 +66,22 @@ public class PostController {
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_DELETE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
+
+    @GetMapping("/my/posts")
+    public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getMyPostList(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "1") int page
+    ) {
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        Page<PostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
+
+        DataResponseDto<Page<PostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
 }
