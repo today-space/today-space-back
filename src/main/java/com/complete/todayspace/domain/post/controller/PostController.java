@@ -31,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1")
@@ -117,4 +120,38 @@ public class PostController {
 
         return new ResponseEntity<>(response, status);
     }
+
+    @GetMapping("/my/posts")
+    public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getMyPostList(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Map<String, String> params
+    ) {
+
+        int page = 1;
+
+        if (!params.isEmpty()) {
+            if (!params.containsKey("page")) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+
+            try {
+
+                page = Integer.parseInt(params.get("page"));
+
+                if (page < 1) {
+                    throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+                }
+
+            } catch (NumberFormatException e) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+        }
+
+        Page<PostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
+
+        DataResponseDto<Page<PostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
 }
