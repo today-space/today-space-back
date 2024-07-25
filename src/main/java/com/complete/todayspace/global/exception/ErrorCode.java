@@ -25,6 +25,8 @@ public enum ErrorCode {
     //Wish
     DUPLICATE_WISH(409, "이미 찜한 상품입니다."),
     CANNOT_ADD_WISH(400, "본인 상품에는 찜 할 수 없습니다."),
+    NOT_EXIST_WISH(400, "찜한 상품이 아닙니다."),
+    CANNOT_DELETE_WISH(400, "다른 사람의 찜을 삭제할 수 없습니다."),
 
     // Posts
     POST_NOT_FOUND(404, "해당 게시글을 찾을 수 없습니다."),
