@@ -39,6 +39,13 @@ public class PostService {
         post.updatePost(requestDto.getContent());
     }
 
+    @Transactional
+    public void deletePost(Long userId, Long postId) {
+        Post post = postRepository.findByIdAndUserId(postId, userId).orElseThrow(
+                () -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        postRepository.delete(post);
+    }
+
     private boolean isPostOwner(Long postId, Long userId) {
         return postRepository.existsByIdAndUserId(postId, userId);
     }
