@@ -6,6 +6,7 @@ import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -95,24 +96,33 @@ public class ProductController {
     @GetMapping("/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
-        @RequestParam(defaultValue = "1") String page,
+        @RequestParam Map<String, String> params,
         @RequestParam(value = "search", required = false) String search,
         @RequestParam(value = "region", required = false) String region
 
     ) {
 
-        int pageNumber;
+        int page = 1;
 
-        try {
-            pageNumber = Integer.parseInt(page);
-            if (pageNumber < 1) {
-                throw new CustomException(ErrorCode.INVALID_REQUEST);
+        if (!params.isEmpty()) {
+            if (!params.containsKey("page")) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
             }
-        } catch (NumberFormatException e) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+
+            try {
+
+                page = Integer.parseInt(params.get("page"));
+
+                if (page < 1) {
+                    throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+                }
+
+            } catch (NumberFormatException e) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
         }
 
-        pageable = PageRequest.of(pageNumber - 1, pageable.getPageSize(), pageable.getSort());
+        pageable = PageRequest.of(page - 1, pageable.getPageSize(), pageable.getSort());
 
         Page<ProductResponseDto> responseDto;
 
