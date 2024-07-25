@@ -11,6 +11,7 @@ import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
+import com.complete.todayspace.global.valid.PageValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -126,25 +127,7 @@ public class PostController {
             @RequestParam Map<String, String> params
     ) {
 
-        int page = 1;
-
-        if (!params.isEmpty()) {
-            if (!params.containsKey("page")) {
-                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
-            }
-
-            try {
-
-                page = Integer.parseInt(params.get("page"));
-
-                if (page < 1) {
-                    throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
-                }
-
-            } catch (NumberFormatException e) {
-                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
-            }
-        }
+        int page = PageValidation.pageValidationInParams(params);
 
         Page<PostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
 

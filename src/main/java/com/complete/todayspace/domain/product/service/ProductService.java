@@ -12,7 +12,9 @@ import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -132,6 +134,16 @@ public class ProductService {
             product.getPrice(),
             product.getTitle()
         ));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDto> getMyProductList(Long id, int page) {
+
+        int size = 8;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Product> postPage = productRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
+
+        return postPage.map( (product) -> new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle()));
     }
 
     private boolean isAddressValid(String address) {
