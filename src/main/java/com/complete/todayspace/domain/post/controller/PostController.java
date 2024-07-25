@@ -8,6 +8,8 @@ import com.complete.todayspace.domain.post.service.PostService;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -19,14 +21,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1")
@@ -96,4 +93,38 @@ public class PostController {
 
         return new ResponseEntity<>(response, status);
     }
+
+    @GetMapping("/my/posts")
+    public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getMyPostList(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Map<String, String> params
+    ) {
+
+        int page = 1;
+
+        if (!params.isEmpty()) {
+            if (!params.containsKey("page")) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+
+            try {
+
+                page = Integer.parseInt(params.get("page"));
+
+                if (page < 1) {
+                    throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+                }
+
+            } catch (NumberFormatException e) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+        }
+
+        Page<PostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
+
+        DataResponseDto<Page<PostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
 }
