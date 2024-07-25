@@ -56,7 +56,6 @@ public class PostController {
     @GetMapping("/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
             @RequestParam(defaultValue = "1") String page,
-            @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "updatedAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String direction) {
 
@@ -71,7 +70,7 @@ public class PostController {
         }
 
         Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(pageNumber - 1, size, sort);
+        Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
 
         Page<PostResponseDto> responseDto = postService.getPostPage(pageable);
         DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
