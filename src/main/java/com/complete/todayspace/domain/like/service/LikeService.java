@@ -24,7 +24,7 @@ public class LikeService {
     private final PostRepository postRepository;
 
     @Transactional
-    public ResponseEntity<StatusResponseDto> toggleLike(User user, Long postId) {
+    public boolean toggleLike(User user, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
@@ -32,11 +32,11 @@ public class LikeService {
 
         if (existingLike.isPresent()) {
             likeRepository.delete(existingLike.get());
-            return new ResponseEntity<>(new StatusResponseDto(SuccessCode.LIKES_DELETE), HttpStatus.OK);
+            return false; // 좋아요 삭제
         } else {
             Like like = new Like(user, post);
             likeRepository.save(like);
-            return new ResponseEntity<>(new StatusResponseDto(SuccessCode.LIKES_CREATE), HttpStatus.CREATED);
+            return true; // 좋아요 추가
         }
     }
 

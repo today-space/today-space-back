@@ -81,6 +81,19 @@ public class PostController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable @Min(1) Long postId
     ) {
-        return likeService.toggleLike(userDetails.getUser(), postId);
+        boolean isLiked = likeService.toggleLike(userDetails.getUser(), postId);
+
+        StatusResponseDto response;
+        HttpStatus status;
+
+        if (isLiked) {
+            response = new StatusResponseDto(SuccessCode.LIKES_CREATE);
+            status = HttpStatus.CREATED;
+        } else {
+            response = new StatusResponseDto(SuccessCode.LIKES_DELETE);
+            status = HttpStatus.OK;
+        }
+
+        return new ResponseEntity<>(response, status);
     }
 }
