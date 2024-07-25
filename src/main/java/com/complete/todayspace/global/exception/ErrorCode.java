@@ -27,6 +27,7 @@ public enum ErrorCode {
     CANNOT_ADD_WISH(400, "본인 상품에는 찜 할 수 없습니다."),
 
     // Posts
+    POST_NOT_FOUND(404, "해당 게시글을 찾을 수 없습니다."),
 
     // Hastags
 
