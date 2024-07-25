@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,5 +30,17 @@ public class WishController {
         wishService.createWish(userDetails.getUser(), productsId);
         StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/products/{productsId}/wish/{wishId}")
+    public ResponseEntity<StatusResponseDto> deleteWish(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long productsId,
+        @PathVariable Long wishId
+    ) {
+
+        wishService.deleteWish(userDetails.getUser(), productsId, wishId);
+        StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
