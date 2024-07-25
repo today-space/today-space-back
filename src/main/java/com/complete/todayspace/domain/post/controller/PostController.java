@@ -15,12 +15,22 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -45,10 +55,26 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
-            @PageableDefault(size = 5, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<PostResponseDto> responseDto = postService.getPostPage(pageable);
+            @RequestParam(defaultValue = "1") String page,
+            @RequestParam(defaultValue = "updatedAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction) {
 
+        int pageNumber;
+        try {
+            pageNumber = Integer.parseInt(page);
+            if (pageNumber < 1) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+        } catch (NumberFormatException e) {
+            throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+        }
+
+        Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+        Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
+
+        Page<PostResponseDto> responseDto = postService.getPostPage(pageable);
         DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
 

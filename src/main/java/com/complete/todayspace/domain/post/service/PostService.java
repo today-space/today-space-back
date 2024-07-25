@@ -30,7 +30,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
-        Page<Post> postPage = postRepository.findAllByOrderByUpdatedAtDesc(pageable);
+        Page<Post> postPage = postRepository.findAll(pageable);
         return postPage.map(post -> new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt()));
     }
 
