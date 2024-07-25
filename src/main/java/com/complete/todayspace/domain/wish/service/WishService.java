@@ -58,7 +58,7 @@ public class WishService {
 
     private Wish findWish(Long wishId) throws CustomException {
         return wishRepository.findById(wishId).orElseThrow(
-            () -> new CustomException(ErrorCode.CANNOT_ADD_WISH)
+            () -> new CustomException(ErrorCode.NOT_EXIST_WISH)
         );
     }
 }
