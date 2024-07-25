@@ -52,17 +52,23 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
-            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "1") String page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "updatedAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String direction) {
 
-        if (page < 1) {
+        int pageNumber;
+        try {
+            pageNumber = Integer.parseInt(page);
+            if (pageNumber < 1) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+        } catch (NumberFormatException e) {
             throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
         }
 
         Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Pageable pageable = PageRequest.of(pageNumber - 1, size, sort);
 
         Page<PostResponseDto> responseDto = postService.getPostPage(pageable);
         DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
