@@ -7,6 +7,8 @@ import com.complete.todayspace.domain.post.service.PostService;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -19,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1")
@@ -70,11 +74,27 @@ public class PostController {
     @GetMapping("/my/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getMyPostList(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam(defaultValue = "1") int page
+            @RequestParam Map<String, String> params
     ) {
 
-        if (page < 1) {
-            page = 1;
+        int page = 1;
+
+        if (!params.isEmpty()) {
+            if (!params.containsKey("page")) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+
+            try {
+
+                page = Integer.parseInt(params.get("page"));
+
+                if (page < 1) {
+                    throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+                }
+
+            } catch (NumberFormatException e) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
         }
 
         Page<PostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
