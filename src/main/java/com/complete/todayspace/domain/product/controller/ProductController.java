@@ -4,7 +4,10 @@ import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -92,10 +95,25 @@ public class ProductController {
     @GetMapping("/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @RequestParam(defaultValue = "1") String page,
         @RequestParam(value = "search", required = false) String search,
         @RequestParam(value = "region", required = false) String region
 
     ) {
+
+        int pageNumber;
+
+        try {
+            pageNumber = Integer.parseInt(page);
+            if (pageNumber < 1) {
+                throw new CustomException(ErrorCode.INVALID_REQUEST);
+            }
+        } catch (NumberFormatException e) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        pageable = PageRequest.of(pageNumber - 1, pageable.getPageSize(), pageable.getSort());
+
         Page<ProductResponseDto> responseDto;
 
         if (search != null && region == null) {
