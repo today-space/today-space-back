@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.post.controller;
 
+import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
 import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
 import com.complete.todayspace.domain.post.dto.PostResponseDto;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class PostController {
 
     private final PostService postService;
+    private final LikeService likeService;
 
     @PostMapping("/posts")
     public ResponseEntity<StatusResponseDto> createPost(
@@ -69,6 +71,27 @@ public class PostController {
         postService.deletePost(userDetails.getUser().getId(), postId);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_DELETE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/posts/{postId}/likes")
+    public ResponseEntity<StatusResponseDto> toggleLike(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId
+    ) {
+        boolean isLiked = likeService.toggleLike(userDetails.getUser(), postId);
+
+        StatusResponseDto response;
+        HttpStatus status;
+
+        if (isLiked) {
+            response = new StatusResponseDto(SuccessCode.LIKES_CREATE);
+            status = HttpStatus.CREATED;
+        } else {
+            response = new StatusResponseDto(SuccessCode.LIKES_DELETE);
+            status = HttpStatus.OK;
+        }
+
+        return new ResponseEntity<>(response, status);
     }
 
     @GetMapping("/my/posts")
