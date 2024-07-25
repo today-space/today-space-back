@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.post.controller;
 
+import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
 import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
 import com.complete.todayspace.domain.post.dto.PostResponseDto;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
 
     private final PostService postService;
+    private final LikeService likeService;
 
     @PostMapping("/posts")
     public ResponseEntity<StatusResponseDto> createPost(
@@ -72,5 +74,13 @@ public class PostController {
         postService.deletePost(userDetails.getUser().getId(), postId);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_DELETE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/posts/{postId}/likes")
+    public ResponseEntity<StatusResponseDto> toggleLike(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId
+    ) {
+        return likeService.toggleLike(userDetails.getUser(), postId);
     }
 }
