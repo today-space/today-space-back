@@ -1,10 +1,13 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
+import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
 import com.complete.todayspace.domain.post.dto.PostResponseDto;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.PostRepository;
 import com.complete.todayspace.domain.user.entity.User;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +23,6 @@ public class PostService {
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto) {
         Post savePost = new Post(requestDto.getContent(), user);
-
         postRepository.save(savePost);
     }
 
@@ -28,5 +30,16 @@ public class PostService {
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
         Page<Post> postPage = postRepository.findAllByOrderByUpdatedAtDesc(pageable);
         return postPage.map(post -> new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt()));
+    }
+
+    @Transactional
+    public void editPost(Long userId, Long postId, EditPostRequestDto requestDto) {
+        Post post = postRepository.findByIdAndUserId(postId, userId).orElseThrow(
+                () -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        post.updatePost(requestDto.getContent());
+    }
+
+    private boolean isPostOwner(Long postId, Long userId) {
+        return postRepository.existsByIdAndUserId(postId, userId);
     }
 }

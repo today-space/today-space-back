@@ -27,4 +27,8 @@ public class Post extends AllTimestamp {
         this.content = content;
         this.user = user;
     }
+
+    public void updatePost(String content) {
+        this.content = content;
+    }
 }

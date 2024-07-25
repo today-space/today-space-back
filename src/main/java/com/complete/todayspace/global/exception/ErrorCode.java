@@ -29,6 +29,7 @@ public enum ErrorCode {
     CANNOT_DELETE_WISH(400, "다른 사람의 찜을 삭제할 수 없습니다. "),
 
     // Posts
+    POST_NOT_FOUND(404, "해당 게시글을 찾을 수 없습니다."),
 
     // Hastags
 
