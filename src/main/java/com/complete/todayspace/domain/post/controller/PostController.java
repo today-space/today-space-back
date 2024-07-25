@@ -18,6 +18,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,6 +61,16 @@ public class PostController {
     ) {
         postService.editPost(userDetails.getUser().getId(), postId, requestDto);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_UPDATE);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<StatusResponseDto> deletePost(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId
+    ) {
+        postService.deletePost(userDetails.getUser().getId(), postId);
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_DELETE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 }
