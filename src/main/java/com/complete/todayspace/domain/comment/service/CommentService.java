@@ -19,12 +19,10 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
-    public CommentResponseDto addComment(User user, Long postId, CreateCommentRequestDto requestDto) {
+    public void addComment(User user, Long postId, CreateCommentRequestDto requestDto) {
         Post post = findPostById(postId);
         Comment comment = new Comment(requestDto.getContent(), post, user);
         commentRepository.save(comment);
-
-        return new CommentResponseDto(comment.getId(), comment.getContent(), comment.getPost().getId(), comment.getUser().getId(), comment.getCreatedAt());
     }
 
     private Post findPostById(Long postId) {
