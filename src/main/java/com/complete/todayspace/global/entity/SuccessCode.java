@@ -33,6 +33,7 @@ public enum SuccessCode {
     PRODUCTS_UP(200, "상품 판매글 끌어올리기 성공"),
     PRODUCTS_SERCH(200, "상품 판매글 검색 성공"),
     REVIEW_CREATE(201, "상품 후기글 추가 성공"),
+    REVIEWS_GET(200, "상품 후기글 조회 성공"),
     PRODUCTS_WISHS(200, "상품 찜 추가 성공"),
     PRODUCTS_WISHS_DELETE(200, "상품 찜 삭제 성공"),
     PAYMENTS(201, "결제 추가 성공"),

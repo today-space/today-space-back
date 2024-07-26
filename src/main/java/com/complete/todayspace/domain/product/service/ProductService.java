@@ -141,9 +141,9 @@ public class ProductService {
 
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Product> postPage = productRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
+        Page<Product> productPage = productRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
 
-        return postPage.map( (product) -> new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle()));
+        return productPage.map( (product) -> new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle()));
     }
 
     private boolean isAddressValid(String address) {

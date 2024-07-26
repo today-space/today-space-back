@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByIdAndUserId(Long productId, Long userId);
@@ -17,5 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByTitleContainingIgnoreCaseAndAddress(Pageable pageable, String search, Address address);
 
     Page<Product> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    List<Product> findAllByUserUsername(String username);
 
 }
