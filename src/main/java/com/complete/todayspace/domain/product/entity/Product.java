@@ -3,6 +3,8 @@ package com.complete.todayspace.domain.product.entity;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.entity.AllTimestamp;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,6 +38,9 @@ public class Product extends AllTimestamp {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<ImageProduct> imageProducts = new ArrayList<>();
 
     public Product(Long id, Long price, String title, String content, Address address, State state, User user){
         this.id = id;

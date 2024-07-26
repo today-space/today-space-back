@@ -14,6 +14,7 @@ import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,15 @@ public class ProductService {
         if (!isProductOwner(productsId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
+        List<ImageProduct> imageProducts = imageProductRepository.findByProduct_Id(productsId);
+
+        for (ImageProduct imageProduct : imageProducts) {
+            String filePath = imageProduct.getFilePath();
+            s3Service.deleteFile(filePath);
+        }
+
         productRepository.delete(product);
+
     }
 
     @Transactional(readOnly = true)
