@@ -1,18 +1,20 @@
 package com.complete.todayspace.domain.wish.controller;
 
+import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.wish.service.WishService;
+import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
+import com.complete.todayspace.global.valid.PageValidation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1")
@@ -43,4 +45,20 @@ public class WishController {
         StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @GetMapping("/my/wishs")
+    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyWishList(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Map<String, String> params
+    ) {
+
+        int page = PageValidation.pageValidationInParams(params);
+
+        Page<ProductResponseDto> responseDto = wishService.getMyWishList(userDetails.getUser().getId(), page - 1);
+
+        DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_WISHS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
 }
