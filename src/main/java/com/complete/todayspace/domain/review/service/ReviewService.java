@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,8 +41,15 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public Page<ReviewResponseDto> getReviewByUsername(String username, int page) {
+        return getReview(productRepository.findAllByUserUsername(username), page);
+    }
 
-        List<Product> product = productRepository.findAllByUserUsername(username);
+    @Transactional(readOnly = true)
+    public Page<ReviewResponseDto> getMyReview(Long id, int page) {
+        return getReview(productRepository.findAllByUserId(id), page);
+    }
+
+    private Page<ReviewResponseDto> getReview(List<Product> product, int page) {
 
         List<Long> productId = product.stream().map(Product::getId).toList();
 

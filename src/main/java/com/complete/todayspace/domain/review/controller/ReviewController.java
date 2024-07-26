@@ -26,7 +26,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/products/{productsId}/reviews")
-    public ResponseEntity<StatusResponseDto> cresteReview(
+    public ResponseEntity<StatusResponseDto> createReview(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @PathVariable Long productsId,
         @Valid @RequestBody ReviewRequestDto requestDto
@@ -45,6 +45,21 @@ public class ReviewController {
         int page = PageValidation.pageValidationInParams(params);
 
         Page<ReviewResponseDto> responseDto = reviewService.getReviewByUsername(username, page - 1);
+
+        DataResponseDto<Page<ReviewResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.REVIEWS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/my/review")
+    public ResponseEntity<DataResponseDto<Page<ReviewResponseDto>>> getMyReview(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Map<String, String> params
+    ) {
+
+        int page = PageValidation.pageValidationInParams(params);
+
+        Page<ReviewResponseDto> responseDto = reviewService.getMyReview(userDetails.getUser().getId(), page - 1);
 
         DataResponseDto<Page<ReviewResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.REVIEWS_GET, responseDto);
 
