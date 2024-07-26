@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ImageProductRepository extends JpaRepository<ImageProduct, Long> {
 
-    List<ImageProduct> findByProduct_Id(Long productId);
+    List<ImageProduct> findByProductId(Long productId);
 }
