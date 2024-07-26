@@ -14,6 +14,7 @@ import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Service s3Service;
+
+    @Value("${cloud.aws.s3.baseUrl}")
+    private String s3baseUrl;
 
     @Transactional
     public void createProduct(User user, CreateProductRequestDto requestDto,
@@ -92,9 +96,16 @@ public class ProductService {
     public ProductDetailResponseDto getProduct(Long productsId) {
 
         Product product = findByProduct(productsId);
+
+        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
+
+        List<String> imageUrlList = imageProducts.stream()
+            .map(imageProduct -> s3baseUrl + imageProduct.getFilePath())
+            .toList();
+
         return new ProductDetailResponseDto(product.getId(), product.getUser().getUsername(),
             product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
-            product.getState(), product.getUpdatedAt());
+            product.getState(), product.getUpdatedAt(), imageUrlList);
     }
 
     @Transactional(readOnly = true)
