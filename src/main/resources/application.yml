@@ -25,3 +25,18 @@ jwt:
   expiration:
     access_token: ${JWT_ACCESS_TOKEN_EXPIRATION}
     refresh_token: ${JWT_REFRESH_TOKEN_EXPIRATION}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${ACCESS_KEY_ID}
+      secret-key: ${SECRET_ACCESS_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+
