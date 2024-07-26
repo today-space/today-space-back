@@ -4,6 +4,9 @@ import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
@@ -30,6 +34,7 @@ import com.complete.todayspace.global.security.UserDetailsImpl;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1")
@@ -41,9 +46,14 @@ public class ProductController {
     @PostMapping("/products")
     public ResponseEntity<StatusResponseDto> createProduct(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Valid @RequestBody CreateProductRequestDto requestDto
+        @Valid @RequestPart(value = "data") CreateProductRequestDto requestDto,
+        @RequestPart(value = "product") List<MultipartFile> productImage
     ) {
-        productService.createProduct(userDetails.getUser(), requestDto);
+        if (productImage.isEmpty()) {
+            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
+        }
+
+        productService.createProduct(userDetails.getUser(), requestDto, productImage);
         StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_CREATE);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
