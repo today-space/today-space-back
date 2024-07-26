@@ -15,4 +15,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findProductsByTitleLike(Pageable pageable, String search);
 
     Page<Product> findByTitleContainingIgnoreCaseAndAddress(Pageable pageable, String search, Address address);
+
+    Page<Product> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
 }

@@ -102,10 +102,25 @@ public class ProductController {
     @GetMapping("/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @RequestParam(defaultValue = "1") String page,
         @RequestParam(value = "search", required = false) String search,
         @RequestParam(value = "region", required = false) String region
 
     ) {
+
+        int pageNumber;
+
+        try {
+            pageNumber = Integer.parseInt(page);
+            if (pageNumber < 1) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+        } catch (NumberFormatException e) {
+            throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+        }
+
+        pageable = PageRequest.of(pageNumber - 1, pageable.getPageSize(), pageable.getSort());
+
         Page<ProductResponseDto> responseDto;
 
         if (search != null && region == null) {
@@ -122,5 +137,21 @@ public class ProductController {
             SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
+
+    @GetMapping("/my/products")
+    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyProductList(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Map<String, String> params
+    ) {
+
+        int page = PageValidation.pageValidationInParams(params);
+
+        Page<ProductResponseDto> responseDto = productService.getMyProductList(userDetails.getUser().getId(), page - 1);
+
+        DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.PRODUCTS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
 }
 
