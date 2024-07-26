@@ -2,6 +2,7 @@ package com.complete.todayspace.domain.product.service;
 
 import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
+import com.complete.todayspace.domain.product.dto.ImageDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.Address;
@@ -99,8 +100,11 @@ public class ProductService {
 
         List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
 
-        List<String> imageUrlList = imageProducts.stream()
-            .map(imageProduct -> s3baseUrl + imageProduct.getFilePath())
+        List<ImageDto> imageUrlList = imageProducts.stream()
+            .map(imageProduct -> new ImageDto(
+                imageProduct.getId().toString(),
+                s3baseUrl + imageProduct.getFilePath()
+            ))
             .toList();
 
         return new ProductDetailResponseDto(product.getId(), product.getUser().getUsername(),
