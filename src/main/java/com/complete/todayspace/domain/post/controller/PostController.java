@@ -1,5 +1,8 @@
 package com.complete.todayspace.domain.post.controller;
 
+import com.complete.todayspace.domain.comment.dto.CommentResponseDto;
+import com.complete.todayspace.domain.comment.dto.CreateCommentRequestDto;
+import com.complete.todayspace.domain.comment.service.CommentService;
 import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
 import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
@@ -43,6 +46,7 @@ public class PostController {
 
     private final PostService postService;
     private final LikeService likeService;
+    private final CommentService commentService;
 
     @PostMapping("/posts")
     public ResponseEntity<StatusResponseDto> createPost(
@@ -120,6 +124,17 @@ public class PostController {
 
         return new ResponseEntity<>(response, status);
     }
+
+    @PostMapping("/posts/{postId}/comments")
+    public ResponseEntity<StatusResponseDto> addComment(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId,
+            @Valid @RequestBody CreateCommentRequestDto requestDto
+    ) {
+        commentService.addComment(userDetails.getUser(), postId, requestDto);
+        return new ResponseEntity<>(new StatusResponseDto(SuccessCode.COMMENT_CREATE), HttpStatus.CREATED);
+    }
+
 
     @GetMapping("/my/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getMyPostList(
