@@ -6,8 +6,11 @@ import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import com.complete.todayspace.global.valid.PageValidation;
 import java.util.List;
+import java.util.Map;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -140,15 +143,17 @@ public class ProductController {
 
     @GetMapping("/my/products")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyProductList(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Map<String, String> params
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam Map<String, String> params
     ) {
 
         int page = PageValidation.pageValidationInParams(params);
 
-        Page<ProductResponseDto> responseDto = productService.getMyProductList(userDetails.getUser().getId(), page - 1);
+        Page<ProductResponseDto> responseDto = productService.getMyProductList(
+            userDetails.getUser().getId(), page - 1);
 
-        DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.PRODUCTS_GET, responseDto);
+        DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(
+            SuccessCode.PRODUCTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
