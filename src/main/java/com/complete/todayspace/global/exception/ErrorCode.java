@@ -30,6 +30,7 @@ public enum ErrorCode {
 
     // Posts
     POST_NOT_FOUND(404, "해당 게시글을 찾을 수 없습니다."),
+    FILE_UPLOAD_ERROR(400, "이미지 파일을 확인해주세요."),
 
     // Hastags
 

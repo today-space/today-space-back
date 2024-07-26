@@ -5,12 +5,15 @@ import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.Address;
+import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
+import com.complete.todayspace.domain.product.repository.ImageProductRepository;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,21 +22,31 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ImageProductRepository imageProductRepository;
+    private final S3Service s3Service;
 
     @Transactional
-    public void createProduct(User user, CreateProductRequestDto requestDto) {
+    public void createProduct(User user, CreateProductRequestDto requestDto,
+        List<MultipartFile> productImage) {
+
+        List<String> fileUrls = s3Service.uploadFile(productImage);
 
         Product saveProduct = new Product(requestDto.getTitle(), requestDto.getPrice(),
-            requestDto.getContent(),
-            requestDto.getAddress(), requestDto.getState(), user);
+            requestDto.getContent(), requestDto.getAddress(), requestDto.getState(), user);
 
         productRepository.save(saveProduct);
+
+        for (String fileUrl : fileUrls) {
+            ImageProduct imageProduct = new ImageProduct(fileUrl, saveProduct);
+            imageProductRepository.save(imageProduct);
+        }
     }
 
     @Transactional
@@ -64,7 +77,15 @@ public class ProductService {
         if (!isProductOwner(productsId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
+        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
+
+        for (ImageProduct imageProduct : imageProducts) {
+            String filePath = imageProduct.getFilePath();
+            s3Service.deleteFile(filePath);
+        }
+
         productRepository.delete(product);
+
     }
 
     @Transactional(readOnly = true)
