@@ -1,8 +1,10 @@
 package com.complete.todayspace.domain.user.controller;
 
 import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
+import com.complete.todayspace.domain.user.dto.ProfileResponseDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.service.UserService;
+import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
@@ -70,6 +72,16 @@ public class UserController {
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.CHECK_USERNAME);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/my/profile")
+    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        ProfileResponseDto responseDto = userService.getProfile(userDetails.getUser().getId());
+
+        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
 }

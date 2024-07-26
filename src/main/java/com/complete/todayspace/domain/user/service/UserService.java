@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.user.service;
 
 import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
+import com.complete.todayspace.domain.user.dto.ProfileResponseDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
@@ -93,6 +94,14 @@ public class UserService {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
 
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileResponseDto getProfile(Long id) {
+
+        User user = userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return new ProfileResponseDto(user.getUsername());
     }
 
     public void checkUsername(CheckUsernameRequestDto requestDto) {
