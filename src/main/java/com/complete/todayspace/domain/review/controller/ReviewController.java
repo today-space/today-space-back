@@ -46,7 +46,7 @@ public class ReviewController {
 
         Page<ReviewResponseDto> responseDto = reviewService.getReviewByUsername(username, page - 1);
 
-        DataResponseDto<Page<ReviewResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.REVIEWS_GET, responseDto);
+        DataResponseDto<Page<ReviewResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_REVIEW_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
@@ -61,7 +61,7 @@ public class ReviewController {
 
         Page<ReviewResponseDto> responseDto = reviewService.getMyReview(userDetails.getUser().getId(), page - 1);
 
-        DataResponseDto<Page<ReviewResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.REVIEWS_GET, responseDto);
+        DataResponseDto<Page<ReviewResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_REVIEW_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }

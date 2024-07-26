@@ -141,7 +141,7 @@ public class ProductService {
 
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Product> productPage = productRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
+        Page<Product> productPage = productRepository.findByUserId(id, pageable);
 
         return productPage.map( (product) -> new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle()));
     }
