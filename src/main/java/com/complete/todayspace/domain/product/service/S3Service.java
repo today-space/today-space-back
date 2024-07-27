@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,9 +27,16 @@ public class S3Service {
 
     private final AmazonS3 s3Client;
 
+    public void createFolder(String bucketName, String folderName) {
+        s3Client.putObject(bucketName, folderName + "/", new ByteArrayInputStream(new byte[0]),
+            new ObjectMetadata());
+    }
+
     // 여러개의 파일 업로드
     public List<String> uploadFile(List<MultipartFile> multipartFile) {
         List<String> fileNameList = new ArrayList<>();
+
+        createFolder(bucket, "product");
 
         multipartFile.forEach(file -> {
             String fileName = createFileName(file.getOriginalFilename());
@@ -38,13 +46,13 @@ public class S3Service {
 
             try (InputStream inputStream = file.getInputStream()) {
                 s3Client.putObject(
-                    new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+                    new PutObjectRequest(bucket, "product/" + fileName, inputStream, objectMetadata)
                         .withCannedAcl(CannedAccessControlList.PublicRead));
             } catch (IOException e) {
                 throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
             }
 
-            fileNameList.add(fileName);
+            fileNameList.add("product/" + fileName);
         });
 
         return fileNameList;

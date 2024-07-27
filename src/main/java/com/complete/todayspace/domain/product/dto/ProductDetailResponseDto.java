@@ -3,6 +3,7 @@ package com.complete.todayspace.domain.product.dto;
 import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.State;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 
 @Getter
@@ -16,10 +17,11 @@ public class ProductDetailResponseDto {
     private final Address address;
     private final State state;
     private final LocalDateTime upDateAt;
+    private final List<ImageDto> imageUrlList;
 
     public ProductDetailResponseDto(Long id, String userName, Long price, String title,
         String content, Address address,
-        State state, LocalDateTime upDateAt) {
+        State state, LocalDateTime upDateAt, List<ImageDto> imageUrlList) {
         this.id = id;
         this.userName = userName;
         this.price = price;
@@ -28,5 +30,6 @@ public class ProductDetailResponseDto {
         this.address = address;
         this.state = state;
         this.upDateAt = upDateAt;
+        this.imageUrlList = imageUrlList;
     }
 }

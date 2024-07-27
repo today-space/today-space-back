@@ -2,6 +2,7 @@ package com.complete.todayspace.domain.product.controller;
 
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
+import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.exception.CustomException;
@@ -103,7 +104,7 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
+    public ResponseEntity<DataResponseDto<Page<ProductImageResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(defaultValue = "1") String page,
         @RequestParam(value = "search", required = false) String search,
@@ -124,7 +125,7 @@ public class ProductController {
 
         pageable = PageRequest.of(pageNumber - 1, pageable.getPageSize(), pageable.getSort());
 
-        Page<ProductResponseDto> responseDto;
+        Page<ProductImageResponseDto> responseDto;
 
         if (search != null && region == null) {
             responseDto = productService.getProductSearch(pageable, search);
@@ -136,7 +137,7 @@ public class ProductController {
             responseDto = productService.getProductPage(pageable);
         }
 
-        DataResponseDto<Page<ProductResponseDto>> product = new DataResponseDto<>(
+        DataResponseDto<Page<ProductImageResponseDto>> product = new DataResponseDto<>(
             SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }

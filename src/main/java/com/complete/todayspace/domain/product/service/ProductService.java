@@ -2,7 +2,9 @@ package com.complete.todayspace.domain.product.service;
 
 import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
+import com.complete.todayspace.domain.product.dto.ImageDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
+import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
@@ -14,6 +16,9 @@ import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +36,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Service s3Service;
+
+    @Value("${cloud.aws.s3.baseUrl}")
+    private String s3baseUrl;
 
     @Transactional
     public void createProduct(User user, CreateProductRequestDto requestDto,
@@ -92,69 +100,80 @@ public class ProductService {
     public ProductDetailResponseDto getProduct(Long productsId) {
 
         Product product = findByProduct(productsId);
+
+        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
+
+        List<ImageDto> imageUrlList = imageProducts.stream()
+            .map(imageProduct -> new ImageDto(
+                imageProduct.getId(),
+                s3baseUrl + imageProduct.getFilePath()
+            ))
+            .toList();
+
         return new ProductDetailResponseDto(product.getId(), product.getUser().getUsername(),
             product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
-            product.getState(), product.getUpdatedAt());
+            product.getState(), product.getUpdatedAt(), imageUrlList);
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getProductSearch(Pageable pageable, String search) {
+    public Page<ProductImageResponseDto> getProductSearch(Pageable pageable, String search) {
 
-        Page<Product> Page = productRepository.findProductsByTitleLike(pageable, search);
-        if (Page.isEmpty()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-        return Page.map(product -> new ProductResponseDto(
-            product.getId(),
-            product.getPrice(),
-            product.getTitle()
-        ));
-    }
+        Page<Product> page = productRepository.findProductsByTitleLike(pageable, search);
 
-    @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getProductRegion(Pageable pageable, String address) {
-
-        if (!isAddressValid(address)) {
+        if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Page<Product> page = productRepository.findAllByAddress(pageable, Address.valueOf(address));
-        return page.map(product -> new ProductResponseDto(
-            product.getId(),
-            product.getPrice(),
-            product.getTitle()
-        ));
+        return getProductImageResponseDtoPage(page);
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getProductSearchRegion(Pageable pageable, String search,
+    public Page<ProductImageResponseDto> getProductRegion(Pageable pageable, String region) {
+
+        if (!isAddressValid(region)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        Page<Product> page;
+
+        page = productRepository.findAllByAddress(pageable, Address.valueOf(region));
+
+        if (page.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        return getProductImageResponseDtoPage(page);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductImageResponseDto> getProductSearchRegion(Pageable pageable, String search,
         String region) {
-        Page<Product> Page;
-        Page = productRepository.findByTitleContainingIgnoreCaseAndAddress(pageable, search,
-            Address.valueOf(region));
-        if (Page.isEmpty()) {
+
+        if (!isAddressValid(region)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
-        return Page.map(product -> new ProductResponseDto(
-            product.getId(),
-            product.getPrice(),
-            product.getTitle()
-        ));
+
+        Page<Product> page = productRepository.findByTitleContainingIgnoreCaseAndAddress(pageable,
+            search,
+            Address.valueOf(region));
+
+        if (page.isEmpty()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        return getProductImageResponseDtoPage(page);
     }
 
-
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getProductPage(Pageable pageable) {
+    public Page<ProductImageResponseDto> getProductPage(Pageable pageable) {
 
-        Page<Product> Page = productRepository.findAll(pageable);
-        if (Page.isEmpty()) {
+        Page<Product> page = productRepository.findAll(pageable);
+
+        if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
-        return Page.map(product -> new ProductResponseDto(
-            product.getId(),
-            product.getPrice(),
-            product.getTitle()
-        ));
+
+        return getProductImageResponseDtoPage(page);
     }
 
     @Transactional(readOnly = true)
@@ -164,7 +183,9 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Product> productPage = productRepository.findByUserId(id, pageable);
 
-        return productPage.map( (product) -> new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle()));
+        return productPage.map(
+            (product) -> new ProductResponseDto(product.getId(), product.getPrice(),
+                product.getTitle()));
     }
 
     private boolean isAddressValid(String address) {
@@ -184,6 +205,33 @@ public class ProductService {
 
     private boolean isProductOwner(Long productId, Long userId) {
         return productRepository.existsByIdAndUserId(productId, userId);
+    }
+
+    private Page<ProductImageResponseDto> getProductImageResponseDtoPage(Page<Product> page) {
+        List<Long> productIds = page.getContent().stream()
+            .map(Product::getId)
+            .toList();
+
+        List<ImageProduct> imageProducts = imageProductRepository.findByProductIdIn(productIds);
+
+        Map<Long, List<ImageDto>> imageMap = imageProducts.stream()
+            .collect(Collectors.groupingBy(imageProduct -> imageProduct.getProduct().getId(),
+                Collectors.mapping(imageProduct -> new ImageDto(
+                    imageProduct.getId(),
+                    s3baseUrl + imageProduct.getFilePath()
+                ), Collectors.toList())));
+
+        return page.map(product -> {
+            List<ImageDto> productImages = imageMap.get(product.getId());
+            ImageDto firstImage =
+                (productImages != null && !productImages.isEmpty()) ? productImages.get(0) : null;
+            return new ProductImageResponseDto(
+                product.getId(),
+                product.getPrice(),
+                product.getTitle(),
+                firstImage
+            );
+        });
     }
 
 }
