@@ -46,16 +46,13 @@ public class UserService {
 
     @Transactional
     public void logout(Long id) {
-
-        User user = userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        user.updateRefreshToken(null);
-
+        findById(id).updateRefreshToken(null);
     }
 
     @Transactional
     public void withdrawal(Long id) {
 
-        User user = userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = findById(id);
         user.updateRefreshToken(null);
         user.withdrawal();
 
@@ -98,16 +95,17 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ProfileResponseDto getProfile(Long id) {
-
-        User user = userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        return new ProfileResponseDto(user.getUsername());
+        return new ProfileResponseDto(findById(id).getUsername());
     }
 
     public void checkUsername(CheckUsernameRequestDto requestDto) {
         if (userRepository.existsByUsername(requestDto.getUsername())) {
             throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
         }
+    }
+
+    private User findById(Long id) {
+        return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
 }
