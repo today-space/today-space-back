@@ -40,6 +40,12 @@ cloud:
     stack:
       auto: false
 
+oauth:
+  rest:
+    api:
+      key:
+        kakao: ${KAKAO_REST_API_KEY}
+
 
 
 
