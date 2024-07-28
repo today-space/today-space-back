@@ -29,6 +29,12 @@ public class OAuthController {
     @Value("${oauth.rest.api.secret.key.naver}")
     private String NAVER_CLIENT_SECRET;
 
+    @Value("${oauth.rest.api.key.google}")
+    private String GOOGLE_CLIENT_ID;
+
+    @Value("${oauth.rest.api.secret.key.google}")
+    private String GOOGLE_CLIENT_SECRET;
+
     private final OAuthService oAuthService;
 
     @GetMapping("/kakao/callback")
@@ -42,11 +48,19 @@ public class OAuthController {
     }
 
     @GetMapping("/naver/callback")
-    public ResponseEntity<StatusResponseDto> naver(
-            @RequestParam String code
-    ) throws IOException {
+    public ResponseEntity<StatusResponseDto> naver(@RequestParam String code) throws IOException {
 
         HttpHeaders headers = oAuthService.naver(code, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
+
+        return new ResponseEntity<>(responseDto, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/google/callback")
+    public ResponseEntity<StatusResponseDto> google(@RequestParam String code) throws IOException {
+
+        HttpHeaders headers = oAuthService.google(code, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
 
