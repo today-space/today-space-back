@@ -234,5 +234,8 @@ public class ProductService {
         });
     }
 
+    public Page<ProductImageResponseDto> getTopWishedProducts(Pageable pageable) {
+        return null;
+    }
 }
 
