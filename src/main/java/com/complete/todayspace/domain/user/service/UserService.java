@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.user.service;
 
 import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
+import com.complete.todayspace.domain.user.dto.ModifyProfileRequestDto;
 import com.complete.todayspace.domain.user.dto.ProfileResponseDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.entity.User;
@@ -96,6 +97,15 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileResponseDto getProfile(Long id) {
         return new ProfileResponseDto(findById(id).getUsername());
+    }
+
+    @Transactional
+    public void modifyProfile(Long id, ModifyProfileRequestDto requestDto) {
+
+        User user = findById(id);
+        String encryptedPassword = passwordEncoder.encode(requestDto.getPassword());
+        user.modifyPassword(encryptedPassword);
+
     }
 
     public void checkUsername(CheckUsernameRequestDto requestDto) {

@@ -51,4 +51,8 @@ public class User extends AllTimestamp {
         this.state = UserState.LEAVE;
     }
 
+    public void modifyPassword(String password) {
+        this.password = password;
+    }
+
 }
