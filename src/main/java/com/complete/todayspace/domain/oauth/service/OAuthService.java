@@ -1,6 +1,6 @@
 package com.complete.todayspace.domain.oauth.service;
 
-import com.complete.todayspace.domain.oauth.dto.KakaoDto;
+import com.complete.todayspace.domain.oauth.dto.OAuthDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
@@ -35,11 +35,11 @@ public class OAuthService {
     private final JwtProvider jwtProvider;
 
     @Transactional
-    public HttpHeaders kakao(String code, String CLIENT_ID) throws JsonProcessingException {
+    public HttpHeaders kakao(String code, String KAKAO_CLIENT_ID) throws JsonProcessingException {
 
-        String token = getToken(code, CLIENT_ID);
-        KakaoDto kakaoDto = getKakaoUserInfo(token);
-        User kakaoUser = registerKakaoUserIfNeeded(kakaoDto);
+        String token = getToken(code, KAKAO_CLIENT_ID);
+        OAuthDto oAuthDto = getKakaoUserInfo(token);
+        User kakaoUser = registerOAuthUserIfNeeded(oAuthDto);
 
         String accessToken = jwtProvider.generateAccessToken(kakaoUser.getUsername(), kakaoUser.getRole().toString());
         String refreshToken = jwtProvider.generateRefreshToken(kakaoUser.getUsername(), kakaoUser.getRole().toString());
@@ -51,6 +51,27 @@ public class OAuthService {
 
         kakaoUser.updateRefreshToken(refreshToken);
         userRepository.save(kakaoUser);
+
+        return headers;
+    }
+
+    @Transactional
+    public HttpHeaders naver(String code, String NAVER_CLIENT_ID, String NAVER_CLIENT_SECRET) throws JsonProcessingException {
+
+        String token = getNaverToken(code, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
+        OAuthDto oAuthDto = getNaverUserInfo(token);
+        User naverUser = registerOAuthUserIfNeeded(oAuthDto);
+
+        String accessToken = jwtProvider.generateAccessToken(naverUser.getUsername(), naverUser.getRole().toString());
+        String refreshToken = jwtProvider.generateRefreshToken(naverUser.getUsername(), naverUser.getRole().toString());
+        ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.add(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+        naverUser.updateRefreshToken(refreshToken);
+        userRepository.save(naverUser);
 
         return headers;
     }
@@ -81,7 +102,29 @@ public class OAuthService {
         return jsonNode.get("access_token").asText();
     }
 
-    private KakaoDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
+    private String getNaverToken(String code, String NAVER_CLIENT_ID, String NAVER_CLIENT_SECRET) throws JsonProcessingException {
+        URI uri = UriComponentsBuilder.fromUriString("https://nid.naver.com/oauth2.0/token")
+                .queryParam("grant_type", "authorization_code")
+                .queryParam("client_id", NAVER_CLIENT_ID)
+                .queryParam("client_secret", NAVER_CLIENT_SECRET)
+                .queryParam("redirect_uri", "http://localhost:3000/oauth/naver")
+                .queryParam("code", code)
+                .build()
+                .toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        RequestEntity<Void> requestEntity = RequestEntity.post(uri)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
+
+        return jsonNode.get("access_token").asText();
+    }
+
+    private OAuthDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
 
         URI uri = UriComponentsBuilder.fromUriString("https://kapi.kakao.com")
                 .path("/v2/user/me")
@@ -102,22 +145,43 @@ public class OAuthService {
         Long id = jsonNode.get("id").asLong();
         String nickname = jsonNode.get("properties").get("nickname").asText();
 
-        return new KakaoDto(id, nickname);
+        return new OAuthDto(id, nickname);
     }
 
-    private User registerKakaoUserIfNeeded(KakaoDto kakaoDto) {
+    private OAuthDto getNaverUserInfo(String accessToken) throws JsonProcessingException {
 
-        User kakaoUser = userRepository.findByKakaoId(kakaoDto.getId()).orElse(null);
+        URI uri = UriComponentsBuilder.fromUriString("https://openapi.naver.com/v1/nid/me")
+                .build()
+                .toUri();
 
-        if (kakaoUser == null) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + accessToken);
+
+        RequestEntity<Void> requestEntity = RequestEntity.get(uri)
+                .headers(headers)
+                .build();
+        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
+
+        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
+        Long id = jsonNode.get("response").get("id").asLong();
+        String nickname = jsonNode.get("response").get("name").asText();
+
+        return new OAuthDto(id, nickname);
+    }
+
+    private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
+
+        User oAuthUser = userRepository.findByoAuthId(oAuthDto.getId()).orElse(null);
+
+        if (oAuthUser == null) {
 
             String password = UUID.randomUUID().toString();
             String encryptedPassword = passwordEncoder.encode(password);
-            kakaoUser = new User(kakaoDto.getNickname() + kakaoDto.getId(), encryptedPassword, null, UserRole.USER, UserState.ACTIVE, kakaoDto.getId());
+            oAuthUser = new User(oAuthDto.getNickname() + oAuthDto.getId(), encryptedPassword, null, UserRole.USER, UserState.ACTIVE, oAuthDto.getId());
 
         }
 
-        return kakaoUser;
+        return oAuthUser;
     }
 
 }

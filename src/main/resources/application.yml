@@ -43,8 +43,12 @@ cloud:
 oauth:
   rest:
     api:
+      secret:
+        key:
+          naver: ${NAVER_REST_API_SECRET_KEY}
       key:
         kakao: ${KAKAO_REST_API_KEY}
+        naver: ${NAVER_REST_API_KEY}
 
 
 

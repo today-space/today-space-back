@@ -21,14 +21,32 @@ import java.io.IOException;
 public class OAuthController {
 
     @Value("${oauth.rest.api.key.kakao}")
-    private String CLIENT_ID;
+    private String KAKAO_CLIENT_ID;
+
+    @Value("${oauth.rest.api.key.naver}")
+    private String NAVER_CLIENT_ID;
+
+    @Value("${oauth.rest.api.secret.key.naver}")
+    private String NAVER_CLIENT_SECRET;
 
     private final OAuthService oAuthService;
 
     @GetMapping("/kakao/callback")
     public ResponseEntity<StatusResponseDto> kakao(@RequestParam String code) throws IOException {
 
-        HttpHeaders headers = oAuthService.kakao(code, CLIENT_ID);
+        HttpHeaders headers = oAuthService.kakao(code, KAKAO_CLIENT_ID);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
+
+        return new ResponseEntity<>(responseDto, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/naver/callback")
+    public ResponseEntity<StatusResponseDto> naver(
+            @RequestParam String code
+    ) throws IOException {
+
+        HttpHeaders headers = oAuthService.naver(code, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
 
