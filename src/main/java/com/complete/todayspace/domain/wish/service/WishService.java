@@ -7,8 +7,7 @@ import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.wish.entity.Wish;
 import com.complete.todayspace.domain.wish.repository.WishRepository;
-import com.complete.todayspace.global.exception.CustomException;
-import com.complete.todayspace.global.exception.ErrorCode;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -25,26 +24,22 @@ public class WishService {
     private final ProductService productService;
     private final ProductRepository productRepository;
 
-    public void createWish(User user, Long productsId) {
+    public boolean toggleWish(User user, Long productsId) {
 
         Product product = productService.findByProduct(productsId);
 
-        checkIfUserCanAddWish(user, product);
-        isDuplicateWish(user, product);
+        Optional<Wish> existingWish = wishRepository.findByUserIdAndProductId(user.getId(), productsId);
 
-        Wish saveWish = new Wish(user, product);
-        wishRepository.save(saveWish);
+        if(existingWish.isPresent()){
+            wishRepository.delete(existingWish.get());
+            return false;
+        }else{
+            Wish wish = new Wish(user, product);
+            wishRepository.save(wish);
+            return true; // 좋아요 추가
+        }
     }
 
-    public void deleteWish(User user, Long productsId, Long wishId) {
-
-        productService.findByProduct(productsId);
-
-        Wish wish = findWish(wishId);
-        checkIfUserCanDeleteWish(user, wish);
-
-        wishRepository.delete(wish);
-    }
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getMyWishList(Long id, int page) {
@@ -66,29 +61,5 @@ public class WishService {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(productResponseDto, pageable, wishPage.getTotalElements());
-    }
-
-    private void checkIfUserCanAddWish(User user, Product product) throws CustomException {
-        if (user.getId().equals(product.getUser().getId())) {
-            throw new CustomException(ErrorCode.CANNOT_ADD_WISH);
-        }
-    }
-
-    private void isDuplicateWish(User user, Product product) throws CustomException {
-        if (!wishRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
-            throw new CustomException(ErrorCode.DUPLICATE_WISH);
-        }
-    }
-
-    private void checkIfUserCanDeleteWish(User user, Wish wish) {
-        if (!user.getId().equals(wish.getUser().getId())) {
-            throw new CustomException(ErrorCode.CANNOT_DELETE_WISH);
-        }
-    }
-
-    private Wish findWish(Long wishId) throws CustomException {
-        return wishRepository.findById(wishId).orElseThrow(
-            () -> new CustomException(ErrorCode.NOT_EXIST_WISH)
-        );
     }
 }
