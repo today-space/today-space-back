@@ -83,7 +83,6 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
 
-        //return postPage.map( (post) -> new PostResponseDto(post.getId(), post.getContent(), post.getCreatedAt()));
         return postPage.map(post -> {
             List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
             List<PostImageDto> imageDtos = images.stream()
