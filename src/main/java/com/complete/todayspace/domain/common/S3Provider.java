@@ -2,6 +2,7 @@ package com.complete.todayspace.domain.common;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.complete.todayspace.global.exception.CustomException;
@@ -50,6 +51,10 @@ public class S3Provider {
         });
 
         return fileNameList;
+    }
+
+    public void deleteFile(String filePath) {
+        s3Client.deleteObject(new DeleteObjectRequest(bucket, filePath));
     }
 
     private String createFileName(String fileName) {

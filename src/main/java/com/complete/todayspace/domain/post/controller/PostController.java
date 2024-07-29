@@ -94,8 +94,10 @@ public class PostController {
     public ResponseEntity<StatusResponseDto> editPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable @Min(1) Long postId,
-            @Valid @RequestBody EditPostRequestDto requestDto
+            @RequestPart("data") @Valid EditPostRequestDto requestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> newImages
     ) {
+        requestDto.setNewImages(newImages);
         postService.editPost(userDetails.getUser().getId(), postId, requestDto);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_UPDATE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);

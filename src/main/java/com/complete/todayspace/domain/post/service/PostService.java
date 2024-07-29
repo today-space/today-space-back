@@ -67,6 +67,27 @@ public class PostService {
         Post post = postRepository.findByIdAndUserId(postId, userId).orElseThrow(
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
+
+        // 삭제할 이미지 처리
+        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            for (Long imageId : deleteImageIds) {
+                ImagePost imagePost = imagePostRepository.findById(imageId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.FILE_UPLOAD_ERROR));
+                s3Provider.deleteFile(imagePost.getFilePath());
+                imagePostRepository.delete(imagePost);
+            }
+        }
+
+        // 새로운 이미지 업로드 처리
+        List<MultipartFile> newImages = requestDto.getNewImages();
+        if (newImages != null && !newImages.isEmpty()) {
+            List<String> fileUrls = s3Provider.uploadFile("post", newImages);
+            for (String fileUrl : fileUrls) {
+                ImagePost imagePost = new ImagePost(fileUrl, post);
+                imagePostRepository.save(imagePost);
+            }
+        }
     }
 
     @Transactional
