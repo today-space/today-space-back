@@ -25,3 +25,33 @@ jwt:
   expiration:
     access_token: ${JWT_ACCESS_TOKEN_EXPIRATION}
     refresh_token: ${JWT_REFRESH_TOKEN_EXPIRATION}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+      baseUrl: https://today-space.s3.ap-northeast-2.amazonaws.com/
+    credentials:
+      access-key: ${ACCESS_KEY_ID}
+      secret-key: ${SECRET_ACCESS_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+
+oauth:
+  rest:
+    api:
+      secret:
+        key:
+          naver: ${NAVER_REST_API_SECRET_KEY}
+          google: ${GOOGLE_REST_API_SECRET_KEY}
+      key:
+        kakao: ${KAKAO_REST_API_KEY}
+        naver: ${NAVER_REST_API_KEY}
+        google: ${GOOGLE_REST_API_KEY}
+
+
+
+

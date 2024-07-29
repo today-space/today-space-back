@@ -9,6 +9,7 @@ public enum SuccessCode {
 
     SIGNUP_CREATE(201, "회원가입 성공"),
     LOGIN(200, "로그인 성공"),
+    SOCIAL_LOGIN(200, "소셜 로그인 성공"),
     LOGOUT(200, "로그아웃 성공"),
     WITHDRAWAL(200, "회원탈퇴 성공"),
     TOKEN_REFRESH(200, "토큰 재발급 성공"),
@@ -32,6 +33,8 @@ public enum SuccessCode {
     PRODUCTS_DELETE(204, "상품 판매글 삭제 성공"),
     PRODUCTS_UP(200, "상품 판매글 끌어올리기 성공"),
     PRODUCTS_SERCH(200, "상품 판매글 검색 성공"),
+    REVIEW_CREATE(201, "상품 후기글 추가 성공"),
+    REVIEWS_GET(200, "상품 후기글 조회 성공"),
     PRODUCTS_WISHS(200, "상품 찜 추가 성공"),
     PRODUCTS_WISHS_DELETE(200, "상품 찜 삭제 성공"),
     PAYMENTS(201, "결제 추가 성공"),

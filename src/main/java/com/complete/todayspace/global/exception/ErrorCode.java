@@ -18,10 +18,19 @@ public enum ErrorCode {
     CHECK_USERNAME_PASSWORD(400, "아이디, 비밀번호를 확인해주세요."),
     USER_NOT_FOUND(400, "해당 유저를 찾을 수 없습니다."),
     // Products
-    PRODUCT_NOT_FOUND(404,"해당 상품을 찾을 수 없습니다."),
+    PRODUCT_NOT_FOUND(404, "해당 상품을 찾을 수 없습니다."),
     NOT_OWNER_PRODUCT(403, "작성자만 변경할 수 있습니다."),
+    //Review
+    DUPLICATE_REVIEW(409, "이미 작성된 후기글이 있습니다."),
+    //Wish
+    DUPLICATE_WISH(409, "이미 찜한 상품입니다."),
+    CANNOT_ADD_WISH(400, "본인 상품에는 찜 할 수 없습니다."),
+    NOT_EXIST_WISH(400, "찜한 상품이 아닙니다."),
+    CANNOT_DELETE_WISH(400, "다른 사람의 찜을 삭제할 수 없습니다."),
 
     // Posts
+    POST_NOT_FOUND(404, "해당 게시글을 찾을 수 없습니다."),
+    FILE_UPLOAD_ERROR(400, "이미지 파일을 확인해주세요."),
 
     // Hastags
 

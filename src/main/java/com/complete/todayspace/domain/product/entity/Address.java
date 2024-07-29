@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum Address {
 
     ALL("전체"),
+    SEOUL("서울"),
     GYEONGGI("경기도"),
     GANGWON("강원도"),
     CHUNGCHEONGBUK("충청북도"),

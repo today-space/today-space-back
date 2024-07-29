@@ -5,10 +5,12 @@ import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.entity.CreatedTimestamp;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "table_review")
 @Getter
+@NoArgsConstructor
 public class Review extends CreatedTimestamp {
 
     @Id
@@ -26,4 +28,9 @@ public class Review extends CreatedTimestamp {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    public Review(String content, Product product, User user) {
+        this.content = content;
+        this.product = product;
+        this.user = user;
+    }
 }
