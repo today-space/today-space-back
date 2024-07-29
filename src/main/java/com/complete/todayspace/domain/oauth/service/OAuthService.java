@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseCookie;
@@ -34,8 +35,23 @@ public class OAuthService {
     private final RestTemplate restTemplate;
     private final JwtProvider jwtProvider;
 
+    @Value("${oauth.rest.api.key.kakao}")
+    private String KAKAO_CLIENT_ID;
+
+    @Value("${oauth.rest.api.key.naver}")
+    private String NAVER_CLIENT_ID;
+
+    @Value("${oauth.rest.api.secret.key.naver}")
+    private String NAVER_CLIENT_SECRET;
+
+    @Value("${oauth.rest.api.key.google}")
+    private String GOOGLE_CLIENT_ID;
+
+    @Value("${oauth.rest.api.secret.key.google}")
+    private String GOOGLE_CLIENT_SECRET;
+
     @Transactional
-    public HttpHeaders kakao(String code, String KAKAO_CLIENT_ID) throws JsonProcessingException {
+    public HttpHeaders kakao(String code) throws JsonProcessingException {
 
         String token = getKakaoToken(code, KAKAO_CLIENT_ID);
         OAuthDto oAuthDto = getKakaoUserInfo(token);
@@ -56,7 +72,7 @@ public class OAuthService {
     }
 
     @Transactional
-    public HttpHeaders naver(String code, String NAVER_CLIENT_ID, String NAVER_CLIENT_SECRET) throws JsonProcessingException {
+    public HttpHeaders naver(String code) throws JsonProcessingException {
 
         String token = getNaverToken(code, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
         OAuthDto oAuthDto = getNaverUserInfo(token);
@@ -77,7 +93,7 @@ public class OAuthService {
     }
 
     @Transactional
-    public HttpHeaders google(String code, String GOOGLE_CLIENT_ID, String GOOGLE_CLIENT_SECRET) throws JsonProcessingException {
+    public HttpHeaders google(String code) throws JsonProcessingException {
 
         String token = getGoogleToken(code, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
         OAuthDto oAuthDto = getGoogleUserInfo(token);
@@ -187,7 +203,7 @@ public class OAuthService {
         ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
 
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        Long id = jsonNode.get("id").asLong();
+        String id = Long.toString(jsonNode.get("id").asLong());
         String nickname = jsonNode.get("properties").get("nickname").asText();
 
         return new OAuthDto(id, nickname);
@@ -208,7 +224,7 @@ public class OAuthService {
         ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
 
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        Long id = jsonNode.get("response").get("id").asLong();
+        String id = jsonNode.get("response").get("id").asText();
         String nickname = jsonNode.get("response").get("name").asText();
 
         return new OAuthDto(id, nickname);
@@ -229,7 +245,7 @@ public class OAuthService {
         ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
 
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        Long id = jsonNode.get("id").asLong();
+        String id = jsonNode.get("id").asText();
         String name = jsonNode.get("name").asText();
 
         return new OAuthDto(id, name);
@@ -237,13 +253,14 @@ public class OAuthService {
 
     private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
 
-        User oAuthUser = userRepository.findByoAuthId(oAuthDto.getId()).orElse(null);
+        String username = oAuthDto.getNickname() + oAuthDto.getId();
+        User oAuthUser = userRepository.findByoAuthId(username).orElse(null);
 
         if (oAuthUser == null) {
 
             String password = UUID.randomUUID().toString();
             String encryptedPassword = passwordEncoder.encode(password);
-            oAuthUser = new User(oAuthDto.getNickname() + oAuthDto.getId(), encryptedPassword, null, UserRole.USER, UserState.ACTIVE, oAuthDto.getId());
+            oAuthUser = new User(username, encryptedPassword, null, UserRole.USER, UserState.ACTIVE, username);
 
         }
 
