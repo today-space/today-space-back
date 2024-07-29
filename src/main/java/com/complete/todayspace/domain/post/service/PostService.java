@@ -51,7 +51,6 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
-        //return postPage.map(post -> new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt()));
 
         return postPage.map(post -> {
             List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
@@ -59,7 +58,7 @@ public class PostService {
                     .map(image -> new PostImageDto(image.getId(), image.getOrders(), image.getFilePath()))
                     .collect(Collectors.toList());
 
-            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos); // 이미지 목록 포함
+            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos);
         });
     }
 
