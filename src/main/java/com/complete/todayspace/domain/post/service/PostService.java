@@ -1,13 +1,19 @@
 package com.complete.todayspace.domain.post.service;
 
+import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
 import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
 import com.complete.todayspace.domain.post.dto.PostResponseDto;
+import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
+import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
+import com.complete.todayspace.domain.product.repository.ImageProductRepository;
+import com.complete.todayspace.domain.product.service.S3Service;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,17 +21,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
+    private final ImagePostRepository imagePostRepository;
+    private final S3Provider s3Provider;
 
     @Transactional
-    public void createPost(User user, CreatePostRequestDto requestDto) {
+    public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
+
+        List<String> fileUrls = s3Provider.uploadFile("post", postImage);
+
         Post savePost = new Post(requestDto.getContent(), user);
         postRepository.save(savePost);
+
+        for (String fileUrl : fileUrls) {
+            ImagePost imagePost = new ImagePost(fileUrl, savePost);
+            imagePostRepository.save(imagePost);
+        }
+
     }
 
     @Transactional(readOnly = true)
