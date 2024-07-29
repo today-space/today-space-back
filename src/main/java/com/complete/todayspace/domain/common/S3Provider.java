@@ -53,9 +53,10 @@ public class S3Provider {
         return fileNameList;
     }
 
-    public void deleteFile(String folderName, String fileName) {
-        s3Client.deleteObject(new DeleteObjectRequest(bucket, folderName + "/" + fileName));
+    public void deleteFile(String filePath) {
+        s3Client.deleteObject(new DeleteObjectRequest(bucket, filePath));
     }
+
 
     private String createFileName(String fileName) {
         return UUID.randomUUID().toString().concat(getFileExtension(fileName));
