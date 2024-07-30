@@ -126,7 +126,7 @@ public class PostService {
         return postRepository.existsByIdAndUserId(postId, userId);
     }
 
-    public Page<PostMainResponseDto> getTopWishedProducts() {
+    public Page<PostMainResponseDto> getTopLikedPosts() {
         return null;
     }
 }

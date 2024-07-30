@@ -170,10 +170,10 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<DataResponseDto<Page<PostMainResponseDto>>> getMainPosts(
+    public ResponseEntity<DataResponseDto<Page<PostMainResponseDto>>> getTopLikedPosts(
         @RequestParam(value = "topLiked", required = false) Boolean topLiked
     ) {
-        Page<PostMainResponseDto> responseDto = postService.getTopWishedProducts();
+        Page<PostMainResponseDto> responseDto = postService.getTopLikedPosts();
 
         DataResponseDto<Page<PostMainResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
 
