@@ -100,7 +100,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ProfileResponseDto getProfile(Long id) {
-        return new ProfileResponseDto(findById(id).getUsername());
+        User user = findById(id);
+
+        return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
     }
 
     @Transactional
