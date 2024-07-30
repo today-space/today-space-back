@@ -41,7 +41,7 @@ public class WishService {
         }else{
             Wish wish = new Wish(user, product);
             wishRepository.save(wish);
-            return true; // 좋아요 추가
+            return true;
         }
     }
 

@@ -35,10 +35,10 @@ public class WishController {
         HttpStatus status;
 
         if (isWish) {
-            response = new StatusResponseDto(SuccessCode.LIKES_CREATE);
+            response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS);
             status = HttpStatus.CREATED;
         } else {
-            response = new StatusResponseDto(SuccessCode.LIKES_DELETE);
+            response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
             status = HttpStatus.OK;
         }
 
