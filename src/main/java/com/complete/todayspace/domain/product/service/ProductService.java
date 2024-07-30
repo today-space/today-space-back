@@ -12,6 +12,7 @@ import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.product.repository.ImageProductRepository;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.user.entity.User;
+import com.complete.todayspace.domain.wish.repository.WishRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
@@ -36,6 +37,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Service s3Service;
+    private final WishRepository wishRepository;
 
     @Value("${cloud.aws.s3.baseUrl}")
     private String s3baseUrl;
@@ -234,8 +236,12 @@ public class ProductService {
         });
     }
 
-    public Page<ProductImageResponseDto> getTopWishedProducts(Pageable pageable) {
-        return null;
+    public Page<ProductImageResponseDto> getTopWishedProducts() {
+        int size = 4;
+
+        Page<Product> page = wishRepository.findTopWishedProducts(PageRequest.of(1, size));
+
+        return getProductImageResponseDtoPage(page);
     }
 }
 

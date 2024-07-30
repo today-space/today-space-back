@@ -128,7 +128,7 @@ public class ProductController {
         Page<ProductImageResponseDto> responseDto;
 
         if (topWished != null && topWished) {
-            responseDto = productService.getTopWishedProducts(pageable);
+            responseDto = productService.getTopWishedProducts();
         } else if (search != null && region == null) {
             responseDto = productService.getProductSearch(pageable, search);
         } else if (region != null && search == null) {
