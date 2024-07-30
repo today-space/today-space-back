@@ -18,4 +18,10 @@ public class EditPostRequestDto {
     private List<Long> deleteImageIds;
 
     private List<MultipartFile> newImages;
+
+    public EditPostRequestDto(String content, List<Long> deleteImageIds, List<MultipartFile> newImages) {
+        this.content = content;
+        this.deleteImageIds = deleteImageIds;
+        this.newImages = newImages;
+    }
 }

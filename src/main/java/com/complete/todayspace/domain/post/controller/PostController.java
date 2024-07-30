@@ -97,7 +97,13 @@ public class PostController {
             @RequestPart("data") @Valid EditPostRequestDto requestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> newImages
     ) {
-        requestDto.setNewImages(newImages);
+        // 새로운 상태로 DTO 생성
+        EditPostRequestDto updatedRequestDto = new EditPostRequestDto(
+                requestDto.getContent(),
+                requestDto.getDeleteImageIds(),
+                newImages
+        );
+
         postService.editPost(userDetails.getUser().getId(), postId, requestDto);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_UPDATE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
