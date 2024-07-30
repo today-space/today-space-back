@@ -1,12 +1,6 @@
 package com.complete.todayspace.domain.product.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
-import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
-import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
-import com.complete.todayspace.domain.product.dto.ImageProductDto;
-import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
-import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
-import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
@@ -14,6 +8,7 @@ import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.product.repository.ImageProductRepository;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.user.entity.User;
+import com.complete.todayspace.domain.wish.repository.WishRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
@@ -37,6 +32,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Provider s3Provider;
+    private final WishRepository wishRepository;
+
 
     @Transactional
     public void createProduct(User user, CreateProductRequestDto requestDto,
@@ -187,7 +184,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MyProductResponseDto> getMyProductList(Long id, int page) {
+    public Page<ProductResponseDto> getMyProductList(Long id, int page) {
 
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -203,7 +200,7 @@ public class ProductService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
-            return new MyProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), s3baseUrl + firstImage.getFilePath());
+            return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), s3Provider.getS3Url(firstImage.getFilePath()));
         });
     }
 
@@ -253,5 +250,12 @@ public class ProductService {
         });
     }
 
+    public Page<ProductImageResponseDto> getTopWishedProducts() {
+        int size = 4;
+
+        Page<Product> page = wishRepository.findTopWishedProducts(PageRequest.of(1, size));
+
+        return getProductImageResponseDtoPage(page);
+    }
 }
 

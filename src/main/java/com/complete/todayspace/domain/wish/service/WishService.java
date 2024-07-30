@@ -1,12 +1,16 @@
 package com.complete.todayspace.domain.wish.service;
 
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
+import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
+import com.complete.todayspace.domain.product.repository.ImageProductRepository;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.wish.entity.Wish;
 import com.complete.todayspace.domain.wish.repository.WishRepository;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -23,6 +27,7 @@ public class WishService {
     private final WishRepository wishRepository;
     private final ProductService productService;
     private final ProductRepository productRepository;
+    private final ImageProductRepository imageProductRepository;
 
     public boolean toggleWish(User user, Long productsId) {
 
@@ -54,11 +59,21 @@ public class WishService {
                 .map( (wish) -> wish.getProduct().getId())
                 .collect(Collectors.toList());
 
-        List<Product> product = productRepository.findAllById(productId);
+        List<Product> products = productRepository.findAllById(productId);
 
-        List<ProductResponseDto> productResponseDto = product.stream()
-                .map(products -> new ProductResponseDto(products.getId(), products.getPrice(), products.getTitle()))
-                .collect(Collectors.toList());
+        List<ProductResponseDto> productResponseDto = products.stream()
+                .map( (product) -> {
+
+                    List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(product.getId());
+
+                    ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
+
+                    if (firstImage == null) {
+                        throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+                    }
+
+                    return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), firstImage.getFilePath());
+                }).collect(Collectors.toList());
 
         return new PageImpl<>(productResponseDto, pageable, wishPage.getTotalElements());
     }
