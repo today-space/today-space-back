@@ -1,21 +1,22 @@
 package com.complete.todayspace.domain.post.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
-public class PostResponseDto {
+public class MyPostResponseDto {
 
     private final Long id;
     private final String content;
+    private final String imagePath;
     private final LocalDateTime updatedAt;
-    private final List<PostImageDto> images;
 
-    public PostResponseDto(Long id, String content, LocalDateTime updatedAt, List<PostImageDto> images) {
+    public MyPostResponseDto(Long id, String content, String imagePath, LocalDateTime updatedAt) {
         this.id = id;
         this.content = content;
+        this.imagePath = imagePath;
         this.updatedAt = updatedAt;
-        this.images = images;
     }
+
 }

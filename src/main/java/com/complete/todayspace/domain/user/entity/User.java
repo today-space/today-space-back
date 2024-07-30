@@ -15,7 +15,7 @@ public class User extends AllTimestamp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, length = 40)
+    @Column(unique = true)
     private String username;
 
     @Column
@@ -28,7 +28,7 @@ public class User extends AllTimestamp {
     private String refreshToken;
 
     @Column
-    private Long oAuthId;
+    private String oAuthId;
 
     @Column
     @Enumerated(value = EnumType.STRING)
@@ -46,7 +46,7 @@ public class User extends AllTimestamp {
         this.state = state;
     }
 
-    public User(String username, String password, String profileImage, UserRole role, UserState state, Long oAuthId) {
+    public User(String username, String password, String profileImage, UserRole role, UserState state, String oAuthId) {
         this.username = username;
         this.password = password;
         this.profileImage = profileImage;
