@@ -16,4 +16,7 @@ public class HashtagList extends CreatedTimestamp {
     @Column(length = 30, unique = true)
     private String hashtagName;
 
+    public HashtagList(String hashtagName) {
+        this.hashtagName = hashtagName;
+    }
 }
