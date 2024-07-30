@@ -12,7 +12,7 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 public interface WishRepository extends JpaRepository<Wish, Long>,
     QuerydslPredicateExecutor<ProductImageResponseDto>, WishRepositoryQuery {
 
-    boolean existsByUserIdAndProductId(Long userId, Long productsId);
+    Optional<Wish> findByUserIdAndProductId(Long userId, Long productsId);
 
     Page<Wish> findByUserId(Long userId, Pageable pageable);
 

@@ -17,11 +17,11 @@ public class ProductDetailResponseDto {
     private final Address address;
     private final State state;
     private final LocalDateTime upDateAt;
-    private final List<ImageDto> imageUrlList;
+    private final List<ImageProductDto> imageUrlList;
 
     public ProductDetailResponseDto(Long id, String userName, Long price, String title,
         String content, Address address,
-        State state, LocalDateTime upDateAt, List<ImageDto> imageUrlList) {
+        State state, LocalDateTime upDateAt, List<ImageProductDto> imageUrlList) {
         this.id = id;
         this.userName = userName;
         this.price = price;
