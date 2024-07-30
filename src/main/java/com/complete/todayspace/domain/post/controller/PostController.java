@@ -6,6 +6,7 @@ import com.complete.todayspace.domain.comment.service.CommentService;
 import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
 import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
+import com.complete.todayspace.domain.post.dto.MyPostResponseDto;
 import com.complete.todayspace.domain.post.dto.PostResponseDto;
 import com.complete.todayspace.domain.post.service.PostService;
 import com.complete.todayspace.global.dto.DataResponseDto;
@@ -144,16 +145,16 @@ public class PostController {
 
 
     @GetMapping("/my/posts")
-    public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getMyPostList(
+    public ResponseEntity<DataResponseDto<Page<MyPostResponseDto>>> getMyPostList(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam Map<String, String> params
     ) {
 
         int page = PageValidation.pageValidationInParams(params);
 
-        Page<PostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
+        Page<MyPostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
 
-        DataResponseDto<Page<PostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+        DataResponseDto<Page<MyPostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
