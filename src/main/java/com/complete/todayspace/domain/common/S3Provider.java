@@ -25,7 +25,6 @@ public class S3Provider {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    // S3 base URL 추가
     @Value("${cloud.aws.s3.base-url}")
     private String s3BaseUrl;
 
@@ -53,14 +52,16 @@ public class S3Provider {
                 throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
             }
 
-            String fileUrl = s3Client.getUrl(bucket, folderName + "/" + fileName).toString();
-            fileNameList.add(fileUrl);
+            String filePath = folderName + "/" + fileName;
+            fileNameList.add(filePath);
+
         });
 
         return fileNameList;
     }
 
-    public void deleteFile(String filePath) {
+    public void deleteFile(String fileUrl) {
+        String filePath = fileUrl.replace(s3BaseUrl, "");
         s3Client.deleteObject(new DeleteObjectRequest(bucket, filePath));
     }
 
