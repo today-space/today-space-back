@@ -6,13 +6,9 @@ import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
-import com.complete.todayspace.domain.product.repository.ImageProductRepository;
-import com.complete.todayspace.domain.product.service.S3Service;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -23,6 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -30,9 +29,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
-
-    @Value("${cloud.aws.s3.baseUrl}")
-    private String s3baseUrl;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
@@ -122,7 +118,7 @@ public class PostService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
-            return new MyPostResponseDto(post.getId(), post.getContent(), s3baseUrl + firstImage.getFilePath(), post.getCreatedAt());
+            return new MyPostResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()), post.getCreatedAt());
         });
     }
 
