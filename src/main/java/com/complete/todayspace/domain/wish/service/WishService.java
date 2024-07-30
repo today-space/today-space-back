@@ -1,7 +1,9 @@
 package com.complete.todayspace.domain.wish.service;
 
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
+import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
+import com.complete.todayspace.domain.product.repository.ImageProductRepository;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.domain.user.entity.User;
@@ -24,6 +26,7 @@ public class WishService {
     private final WishRepository wishRepository;
     private final ProductService productService;
     private final ProductRepository productRepository;
+    private final ImageProductRepository imageProductRepository;
 
     public void createWish(User user, Long productsId) {
 
@@ -59,11 +62,21 @@ public class WishService {
                 .map( (wish) -> wish.getProduct().getId())
                 .collect(Collectors.toList());
 
-        List<Product> product = productRepository.findAllById(productId);
+        List<Product> products = productRepository.findAllById(productId);
 
-        List<ProductResponseDto> productResponseDto = product.stream()
-                .map(products -> new ProductResponseDto(products.getId(), products.getPrice(), products.getTitle()))
-                .collect(Collectors.toList());
+        List<ProductResponseDto> productResponseDto = products.stream()
+                .map( (product) -> {
+
+                    List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(product.getId());
+
+                    ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
+
+                    if (firstImage == null) {
+                        throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+                    }
+
+                    return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), firstImage.getFilePath());
+                }).collect(Collectors.toList());
 
         return new PageImpl<>(productResponseDto, pageable, wishPage.getTotalElements());
     }
@@ -75,7 +88,7 @@ public class WishService {
     }
 
     private void isDuplicateWish(User user, Product product) throws CustomException {
-        if (!wishRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
+        if (wishRepository.existsByUserIdAndProductId(user.getId(), product.getId())) {
             throw new CustomException(ErrorCode.DUPLICATE_WISH);
         }
     }

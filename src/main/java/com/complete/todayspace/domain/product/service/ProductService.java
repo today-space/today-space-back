@@ -174,7 +174,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MyProductResponseDto> getMyProductList(Long id, int page) {
+    public Page<ProductResponseDto> getMyProductList(Long id, int page) {
 
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
@@ -190,7 +190,7 @@ public class ProductService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
-            return new MyProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), s3baseUrl + firstImage.getFilePath());
+            return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), s3baseUrl + firstImage.getFilePath());
         });
     }
 

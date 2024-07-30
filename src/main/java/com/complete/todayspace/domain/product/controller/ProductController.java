@@ -141,17 +141,17 @@ public class ProductController {
     }
 
     @GetMapping("/my/products")
-    public ResponseEntity<DataResponseDto<Page<MyProductResponseDto>>> getMyProductList(
+    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyProductList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam Map<String, String> params
     ) {
 
         int page = PageValidation.pageValidationInParams(params);
 
-        Page<MyProductResponseDto> responseDto = productService.getMyProductList(
+        Page<ProductResponseDto> responseDto = productService.getMyProductList(
             userDetails.getUser().getId(), page - 1);
 
-        DataResponseDto<Page<MyProductResponseDto>> dataResponseDto = new DataResponseDto<>(
+        DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(
             SuccessCode.PRODUCTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
