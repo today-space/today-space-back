@@ -95,7 +95,7 @@ public class ProductController {
     ) {
         ProductDetailResponseDto responseDto = productService.getProduct(productsId);
         DataResponseDto<ProductDetailResponseDto> product = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+            SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
@@ -104,8 +104,8 @@ public class ProductController {
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(defaultValue = "1") String page,
         @RequestParam(value = "search", required = false) String search,
-        @RequestParam(value = "region", required = false) String region
-
+        @RequestParam(value = "region", required = false) String region,
+        @RequestParam(value = "topWished", required = false) Boolean topWished
     ) {
 
         int pageNumber;
@@ -123,7 +123,9 @@ public class ProductController {
 
         Page<ProductImageResponseDto> responseDto;
 
-        if (search != null && region == null) {
+        if (topWished != null && topWished) {
+            responseDto = productService.getTopWishedProducts();
+        } else if (search != null && region == null) {
             responseDto = productService.getProductSearch(pageable, search);
         } else if (region != null && search == null) {
             responseDto = productService.getProductRegion(pageable, region);
@@ -134,7 +136,7 @@ public class ProductController {
         }
 
         DataResponseDto<Page<ProductImageResponseDto>> product = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+            SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
