@@ -9,8 +9,5 @@ public interface ImageProductRepository extends JpaRepository<ImageProduct, Long
 
     List<ImageProduct> findByProductId(Long productId);
 
-    List<ImageProduct> findByProductIdIn(List<Long> productIds);
-
     List<ImageProduct> findByProductIdOrderByCreatedAtAsc(Long productId);
-
 }
