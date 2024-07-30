@@ -16,6 +16,9 @@ public enum ErrorCode {
     // User
     USER_NOT_UNIQUE(409, "사용 중인 아이디입니다."),
     CHECK_USERNAME_PASSWORD(400, "아이디, 비밀번호를 확인해주세요."),
+    CHECK_PASSWORD(400, "비밀번호를 확인해주세요."),
+    PASSWORD_MISMATCH(400, "비밀번호가 일치하지 않습니다."),
+    PASSWORD_SAME_AS_OLD(400, "이전 비밀번호와 동일합니다."),
     USER_NOT_FOUND(400, "해당 유저를 찾을 수 없습니다."),
     // Products
     PRODUCT_NOT_FOUND(404, "해당 상품을 찾을 수 없습니다."),
