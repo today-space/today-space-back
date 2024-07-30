@@ -55,7 +55,7 @@ public class PostService {
         return postPage.map(post -> {
             List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
             List<PostImageDto> imageDtos = images.stream()
-                    .map(image -> new PostImageDto(image.getId(), image.getOrders(), image.getFilePath()))
+                    .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
                     .collect(Collectors.toList());
 
             return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos);
@@ -67,6 +67,27 @@ public class PostService {
         Post post = postRepository.findByIdAndUserId(postId, userId).orElseThrow(
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
+
+        // 기존 이미지 삭제
+        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            for (Long imageId : deleteImageIds) {
+                ImagePost imagePost = imagePostRepository.findById(imageId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.FILE_UPLOAD_ERROR));
+                s3Provider.deleteFile(imagePost.getFilePath());
+                imagePostRepository.delete(imagePost);
+            }
+        }
+
+        // 새로운 이미지 추가
+        List<MultipartFile> newImages = requestDto.getNewImages();
+        if (newImages != null && !newImages.isEmpty()) {
+            List<String> fileUrls = s3Provider.uploadFile("post", newImages);
+            for (String fileUrl : fileUrls) {
+                ImagePost imagePost = new ImagePost(fileUrl, post);
+                imagePostRepository.save(imagePost);
+            }
+        }
     }
 
     @Transactional
