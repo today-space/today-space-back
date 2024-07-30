@@ -33,12 +33,15 @@ public class WishService {
 
         Product product = productService.findByProduct(productsId);
 
-        Optional<Wish> existingWish = wishRepository.findByUserIdAndProductId(user.getId(), productsId);
+        Optional<Wish> existingWish = wishRepository.findByUserIdAndProductId(user.getId(),
+            productsId);
 
-        if(existingWish.isPresent()){
+        if (existingWish.isPresent()) {
+
             wishRepository.delete(existingWish.get());
             return false;
-        }else{
+        } else {
+
             Wish wish = new Wish(user, product);
             wishRepository.save(wish);
             return true;
@@ -55,25 +58,27 @@ public class WishService {
         Page<Wish> wishPage = wishRepository.findByUserId(id, pageable);
 
         List<Long> productId = wishPage.getContent()
-                .stream()
-                .map( (wish) -> wish.getProduct().getId())
-                .collect(Collectors.toList());
+            .stream()
+            .map((wish) -> wish.getProduct().getId())
+            .collect(Collectors.toList());
 
         List<Product> products = productRepository.findAllById(productId);
 
         List<ProductResponseDto> productResponseDto = products.stream()
-                .map( (product) -> {
+            .map((product) -> {
 
-                    List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(product.getId());
+                List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(
+                    product.getId());
 
-                    ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
+                ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
 
-                    if (firstImage == null) {
-                        throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
-                    }
+                if (firstImage == null) {
+                    throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+                }
 
-                    return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), firstImage.getFilePath());
-                }).collect(Collectors.toList());
+                return new ProductResponseDto(product.getId(), product.getPrice(),
+                    product.getTitle(), firstImage.getFilePath());
+            }).collect(Collectors.toList());
 
         return new PageImpl<>(productResponseDto, pageable, wishPage.getTotalElements());
     }

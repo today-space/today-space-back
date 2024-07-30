@@ -56,19 +56,24 @@ public class ProductService {
     public void editProduct(Long id, Long productsId, EditProductRequestDto requestDto) {
 
         Product product = findByProduct(productsId);
+
         if (!isProductOwner(productsId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
+
         product.updateProduct(requestDto.getPrice(), requestDto.getTitle(), requestDto.getContent(),
             requestDto.getAddress(), requestDto.getState());
     }
 
     @Transactional
     public void updateProduct(Long id, Long productsId) {
+
         Product product = findByProduct(productsId);
+
         if (!isProductOwner(productsId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
+
         product.updateUpdatedAt();
         productRepository.save(product);
     }
@@ -80,6 +85,7 @@ public class ProductService {
         if (!isProductOwner(productsId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
+
         List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
 
         for (ImageProduct imageProduct : imageProducts) {
@@ -131,9 +137,9 @@ public class ProductService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        if(region.equals("ALL")){
+        if (region.equals("ALL")) {
             page = productRepository.findAll(pageable);
-        }else{
+        } else {
             page = productRepository.findAllByAddress(pageable, Address.valueOf(region));
         }
 
@@ -154,11 +160,9 @@ public class ProductService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        if(region.equals("ALL")){
-
+        if (region.equals("ALL")) {
             page = productRepository.findByTitleContainingIgnoreCase(pageable, search);
-        }else{
-
+        } else {
             page = productRepository.findByTitleContainingIgnoreCaseAndAddress(pageable,
                 search,
                 Address.valueOf(region));
@@ -190,9 +194,10 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Product> productPage = productRepository.findByUserId(id, pageable);
 
-        return productPage.map( (product) -> {
+        return productPage.map((product) -> {
 
-            List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(product.getId());
+            List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(
+                product.getId());
 
             ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
 
@@ -200,7 +205,8 @@ public class ProductService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
-            return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), s3Provider.getS3Url(firstImage.getFilePath()));
+            return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(),
+                s3Provider.getS3Url(firstImage.getFilePath()));
         });
     }
 
