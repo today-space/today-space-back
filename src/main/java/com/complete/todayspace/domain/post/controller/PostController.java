@@ -91,6 +91,12 @@ public class PostController {
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
 
+    @GetMapping("/hashtags")
+    public ResponseEntity<?> getPostsByHashtag(@RequestParam("hashtagsName") List<String> hashtagsName) {
+        List<PostResponseDto> posts = postService.getPostsByHashtags(hashtagsName);
+        return ResponseEntity.ok(new DataResponseDto<>(SuccessCode.POSTS_GET, posts));
+    }
+
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,

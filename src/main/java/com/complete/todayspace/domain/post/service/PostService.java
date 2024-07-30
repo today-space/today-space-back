@@ -15,6 +15,7 @@ import com.complete.todayspace.domain.post.repository.PostRepository;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -83,6 +84,36 @@ public class PostService {
 
             return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponseDto> getPostsByHashtags(List<String> hashtagsName) {
+        List<PostResponseDto> result = new ArrayList<>();
+
+        for (String tag : hashtagsName) {
+            HashtagList hashtagList = hashtagListRepository.findByHashtagName(tag);
+            if (hashtagList != null) {
+                List<Hashtag> hashtags = hashtagRepository.findTop5ByHashtagListOrderByPostUpdatedAtDesc(hashtagList);
+                List<PostResponseDto> posts = hashtags.stream()
+                        .map(hashtag -> {
+                            Post post = hashtag.getPost();
+                            List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
+                            List<PostImageDto> imageDtos = images.stream()
+                                    .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
+                                    .collect(Collectors.toList());
+
+                            List<Hashtag> postHashtags = hashtagRepository.findByPostId(post.getId());
+                            List<HashtagDto> hashtagDtos = postHashtags.stream()
+                                    .map(tagEntity -> new HashtagDto(tagEntity.getHashtagList().getHashtagName()))
+                                    .collect(Collectors.toList());
+
+                            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos);
+                        })
+                        .collect(Collectors.toList());
+                result.addAll(posts);
+            }
+        }
+        return result;
     }
 
     @Transactional
