@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import static com.complete.todayspace.domain.wish.entity.QWish.wish;
+import static com.complete.todayspace.domain.product.entity.QProduct.product;
 
 @RequiredArgsConstructor
 public class WishRepositoryQueryImpl implements WishRepositoryQuery {
@@ -26,7 +27,8 @@ public class WishRepositoryQueryImpl implements WishRepositoryQuery {
         LocalDateTime oneWeekAgo = LocalDateTime.now().minus(1, ChronoUnit.WEEKS);
 
         // Query to get the products with the most wishes in the last week
-        var query = query(wish.product, oneWeekAgo)
+        var query = query(product, oneWeekAgo)
+            .groupBy(product.id, product.address, product.content, product.createdAt, product.price, product.state, product.title, product.updatedAt, product.user)
             .orderBy(Expressions.numberTemplate(Long.class, "count({0})", wish.id).desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
@@ -35,8 +37,10 @@ public class WishRepositoryQueryImpl implements WishRepositoryQuery {
         var products = query.fetch();
 
         // Query to get the total count of products
-        var countQuery = query(wish.product.count(), oneWeekAgo);
-        long totalSize = countQuery.fetch().get(0);
+        var countQuery = jpaQueryFactory.select(wish.product.id.countDistinct())
+            .from(wish)
+            .where(wishCreatedAfter(oneWeekAgo));
+        long totalSize = countQuery.fetchOne();
 
         // Return the page
         return PageableExecutionUtils.getPage(products, pageable, () -> totalSize);
@@ -45,7 +49,7 @@ public class WishRepositoryQueryImpl implements WishRepositoryQuery {
     private <T> JPAQuery<T> query(Expression<T> expr, LocalDateTime oneWeekAgo) {
         return jpaQueryFactory.select(expr)
             .from(wish)
-            .join(wish.product)
+            .join(wish.product, product)
             .where(
                 wishCreatedAfter(oneWeekAgo)
             );

@@ -99,7 +99,7 @@ public class ProductController {
     ) {
         ProductDetailResponseDto responseDto = productService.getProduct(productsId);
         DataResponseDto<ProductDetailResponseDto> product = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+            SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
@@ -140,7 +140,7 @@ public class ProductController {
         }
 
         DataResponseDto<Page<ProductImageResponseDto>> product = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+            SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
