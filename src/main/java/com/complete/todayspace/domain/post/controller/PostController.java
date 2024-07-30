@@ -169,7 +169,7 @@ public class PostController {
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
-    @GetMapping("/posts")
+    @GetMapping("/main/posts")
     public ResponseEntity<DataResponseDto<Page<PostMainResponseDto>>> getTopLikedPosts(
         @RequestParam(value = "topLiked", required = false) Boolean topLiked
     ) {
