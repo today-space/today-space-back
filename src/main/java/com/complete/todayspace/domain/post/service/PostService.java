@@ -73,6 +73,14 @@ public class PostService {
     public void deletePost(Long userId, Long postId) {
         Post post = postRepository.findByIdAndUserId(postId, userId).orElseThrow(
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        List<ImagePost> images = imagePostRepository.findByPostId(postId);
+        for (ImagePost image : images) {
+            String filePath = image.getFilePath();
+            s3Provider.deleteFile(filePath);
+            imagePostRepository.delete(image);
+        }
+
         postRepository.delete(post);
     }
 
