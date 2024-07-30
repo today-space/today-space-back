@@ -1,22 +1,16 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
-import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
-import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
-import com.complete.todayspace.domain.post.dto.PostImageDto;
-import com.complete.todayspace.domain.post.dto.PostResponseDto;
+import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
-import com.complete.todayspace.domain.product.repository.ImageProductRepository;
-import com.complete.todayspace.domain.product.service.S3Service;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +18,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,19 +103,22 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> getMyPostList(Long id, int page) {
+    public Page<MyPostResponseDto> getMyPostList(Long id, int page) {
 
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
 
         return postPage.map(post -> {
-            List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
-            List<PostImageDto> imageDtos = images.stream()
-                    .map(image -> new PostImageDto(image.getId(), image.getOrders(), image.getFilePath()))
-                    .collect(Collectors.toList());
+            List<ImagePost> images = imagePostRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
 
-            return new PostResponseDto(post.getId(), post.getContent(), post.getCreatedAt(), imageDtos);
+            ImagePost firstImage = images.isEmpty() ? null : images.get(0);
+
+            if (firstImage == null) {
+                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+            }
+
+            return new MyPostResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()), post.getCreatedAt());
         });
     }
 
