@@ -7,9 +7,6 @@ WORKDIR /app
 # Copy the project’s build artifact (JAR file) to the container
 COPY build/libs/*.jar app.jar
 
-# Copy the .env file to the container
-COPY .env .env
-
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
 
