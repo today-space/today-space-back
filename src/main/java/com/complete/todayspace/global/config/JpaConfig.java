@@ -14,9 +14,19 @@ public class JpaConfig {
     @PersistenceContext
     private EntityManager entityManager;
 
+
+    @PersistenceContext
+    private EntityManager entityManager2;
+
+
     @Bean
     public JPAQueryFactory jpaQueryFactory(EntityManager entityManager) {
         return new JPAQueryFactory(entityManager);
+    }
+
+    @Bean
+    public JPAQueryFactory jpaQueryFactory2() {
+        return new JPAQueryFactory(entityManager2);
     }
 
 }
