@@ -21,8 +21,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 public class S3Provider {
+
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
+
+    // S3 base URL 추가
+    @Value("${cloud.aws.s3.base-url}")
+    private String s3BaseUrl;
+
     private final AmazonS3 s3Client;
 
     public void createFolder(String folderName) {
@@ -47,7 +53,8 @@ public class S3Provider {
                 throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
             }
 
-            fileNameList.add(folderName + "/" + fileName);
+            String fileUrl = s3Client.getUrl(bucket, folderName + "/" + fileName).toString();
+            fileNameList.add(fileUrl);
         });
 
         return fileNameList;
@@ -77,5 +84,10 @@ public class S3Provider {
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
         }
         return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    // S3 URL 반환하는 메소드 추가
+    public String getS3Url(String filePath) {
+        return s3BaseUrl + filePath;
     }
 }
