@@ -7,6 +7,7 @@ import com.complete.todayspace.domain.product.dto.ImageProductDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
+import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
@@ -186,15 +187,24 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponseDto> getMyProductList(Long id, int page) {
+    public Page<MyProductResponseDto> getMyProductList(Long id, int page) {
 
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Product> productPage = productRepository.findByUserId(id, pageable);
 
-        return productPage.map(
-            (product) -> new ProductResponseDto(product.getId(), product.getPrice(),
-                product.getTitle()));
+        return productPage.map( (product) -> {
+
+            List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(product.getId());
+
+            ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
+
+            if (firstImage == null) {
+                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+            }
+
+            return new MyProductResponseDto(product.getId(), product.getPrice(), product.getTitle(), s3baseUrl + firstImage.getFilePath());
+        });
     }
 
     private boolean isAddressValid(String address) {

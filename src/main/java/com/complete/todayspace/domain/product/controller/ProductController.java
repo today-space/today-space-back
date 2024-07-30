@@ -1,9 +1,6 @@
 package com.complete.todayspace.domain.product.controller;
 
-import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
-import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
-import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
-import com.complete.todayspace.domain.product.dto.ProductResponseDto;
+import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -30,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
 import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
@@ -143,17 +139,17 @@ public class ProductController {
     }
 
     @GetMapping("/my/products")
-    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyProductList(
+    public ResponseEntity<DataResponseDto<Page<MyProductResponseDto>>> getMyProductList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam Map<String, String> params
     ) {
 
         int page = PageValidation.pageValidationInParams(params);
 
-        Page<ProductResponseDto> responseDto = productService.getMyProductList(
+        Page<MyProductResponseDto> responseDto = productService.getMyProductList(
             userDetails.getUser().getId(), page - 1);
 
-        DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(
+        DataResponseDto<Page<MyProductResponseDto>> dataResponseDto = new DataResponseDto<>(
             SuccessCode.PRODUCTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
