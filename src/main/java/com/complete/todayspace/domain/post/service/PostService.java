@@ -125,4 +125,8 @@ public class PostService {
     private boolean isPostOwner(Long postId, Long userId) {
         return postRepository.existsByIdAndUserId(postId, userId);
     }
+
+    public Page<PostMainResponseDto> getTopWishedProducts() {
+        return null;
+    }
 }
