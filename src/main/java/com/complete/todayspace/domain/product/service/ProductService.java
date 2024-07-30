@@ -1,8 +1,9 @@
 package com.complete.todayspace.domain.product.service;
 
+import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
 import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
-import com.complete.todayspace.domain.product.dto.ImageDto;
+import com.complete.todayspace.domain.product.dto.ImageProductDto;
 import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
@@ -18,7 +19,6 @@ import com.complete.todayspace.global.exception.ErrorCode;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,16 +35,13 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
-    private final S3Service s3Service;
-
-    @Value("${cloud.aws.s3.baseUrl}")
-    private String s3baseUrl;
+    private final S3Provider s3Provider;
 
     @Transactional
     public void createProduct(User user, CreateProductRequestDto requestDto,
         List<MultipartFile> productImage) {
 
-        List<String> fileUrls = s3Service.uploadFile(productImage);
+        List<String> fileUrls = s3Provider.uploadFile("product", productImage);
 
         Product saveProduct = new Product(requestDto.getTitle(), requestDto.getPrice(),
             requestDto.getContent(), requestDto.getAddress(), requestDto.getState(), user);
@@ -89,7 +86,7 @@ public class ProductService {
 
         for (ImageProduct imageProduct : imageProducts) {
             String filePath = imageProduct.getFilePath();
-            s3Service.deleteFile(filePath);
+            s3Provider.deleteFile(filePath);
         }
 
         productRepository.delete(product);
@@ -103,10 +100,10 @@ public class ProductService {
 
         List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
 
-        List<ImageDto> imageUrlList = imageProducts.stream()
-            .map(imageProduct -> new ImageDto(
+        List<ImageProductDto> imageUrlList = imageProducts.stream()
+            .map(imageProduct -> new ImageProductDto(
                 imageProduct.getId(),
-                s3baseUrl + imageProduct.getFilePath()
+                s3Provider.getS3Url(imageProduct.getFilePath())
             ))
             .toList();
 
@@ -130,13 +127,17 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductImageResponseDto> getProductRegion(Pageable pageable, String region) {
 
+        Page<Product> page;
+
         if (!isAddressValid(region)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Page<Product> page;
-
-        page = productRepository.findAllByAddress(pageable, Address.valueOf(region));
+        if(region.equals("ALL")){
+            page = productRepository.findAll(pageable);
+        }else{
+            page = productRepository.findAllByAddress(pageable, Address.valueOf(region));
+        }
 
         if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -149,13 +150,21 @@ public class ProductService {
     public Page<ProductImageResponseDto> getProductSearchRegion(Pageable pageable, String search,
         String region) {
 
+        Page<Product> page;
+
         if (!isAddressValid(region)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        Page<Product> page = productRepository.findByTitleContainingIgnoreCaseAndAddress(pageable,
-            search,
-            Address.valueOf(region));
+        if(region.equals("ALL")){
+
+            page = productRepository.findByTitleContainingIgnoreCase(pageable, search);
+        }else{
+
+            page = productRepository.findByTitleContainingIgnoreCaseAndAddress(pageable,
+                search,
+                Address.valueOf(region));
+        }
 
         if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -214,16 +223,16 @@ public class ProductService {
 
         List<ImageProduct> imageProducts = imageProductRepository.findByProductIdIn(productIds);
 
-        Map<Long, List<ImageDto>> imageMap = imageProducts.stream()
+        Map<Long, List<ImageProductDto>> imageMap = imageProducts.stream()
             .collect(Collectors.groupingBy(imageProduct -> imageProduct.getProduct().getId(),
-                Collectors.mapping(imageProduct -> new ImageDto(
+                Collectors.mapping(imageProduct -> new ImageProductDto(
                     imageProduct.getId(),
-                    s3baseUrl + imageProduct.getFilePath()
+                    s3Provider.getS3Url(imageProduct.getFilePath())
                 ), Collectors.toList())));
 
         return page.map(product -> {
-            List<ImageDto> productImages = imageMap.get(product.getId());
-            ImageDto firstImage =
+            List<ImageProductDto> productImages = imageMap.get(product.getId());
+            ImageProductDto firstImage =
                 (productImages != null && !productImages.isEmpty()) ? productImages.get(0) : null;
             return new ProductImageResponseDto(
                 product.getId(),
