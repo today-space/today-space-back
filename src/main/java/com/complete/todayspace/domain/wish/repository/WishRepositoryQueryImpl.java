@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,22 +29,24 @@ public class WishRepositoryQueryImpl implements WishRepositoryQuery {
 
         // Query to get the products with the most wishes in the last week
         var query = query(product, oneWeekAgo)
-            .groupBy(product.id, product.address, product.content, product.createdAt, product.price, product.state, product.title, product.updatedAt, product.user)
+            .groupBy(product)
             .orderBy(Expressions.numberTemplate(Long.class, "count({0})", wish.id).desc())
-            .offset(pageable.getOffset())
             .limit(pageable.getPageSize());
 
         // Fetch the results
-        var products = query.fetch();
+        List<Product> products = query.fetch();
 
-        // Query to get the total count of products
-        var countQuery = jpaQueryFactory.select(wish.product.id.countDistinct())
-            .from(wish)
-            .where(wishCreatedAfter(oneWeekAgo));
-        long totalSize = countQuery.fetchOne();
+        // If there are no wished products, fetch the recently added products
+        if (products.isEmpty()) {
+            var recentProductsQuery = jpaQueryFactory.selectFrom(product)
+                .orderBy(product.createdAt.desc())
+                .limit(pageable.getPageSize());
+
+            products = recentProductsQuery.fetch();
+        }
 
         // Return the page
-        return PageableExecutionUtils.getPage(products, pageable, () -> totalSize);
+        return PageableExecutionUtils.getPage(products, pageable, () -> 4);
     }
 
     private <T> JPAQuery<T> query(Expression<T> expr, LocalDateTime oneWeekAgo) {
