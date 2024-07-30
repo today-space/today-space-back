@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.user.controller;
 
 import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
+import com.complete.todayspace.domain.user.dto.ModifyProfileRequestDto;
 import com.complete.todayspace.domain.user.dto.ProfileResponseDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.service.UserService;
@@ -82,6 +83,19 @@ public class UserController {
         DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
+    @PatchMapping("/my/profile")
+    public ResponseEntity<StatusResponseDto> modifyProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ModifyProfileRequestDto requestDto
+    ) {
+
+        userService.modifyProfile(userDetails.getUser().getId(), requestDto);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PROFILE_UPDATE);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }

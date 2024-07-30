@@ -17,6 +17,7 @@ import com.complete.todayspace.global.security.UserDetailsImpl;
 import com.complete.todayspace.global.valid.PageValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1")
@@ -50,10 +52,15 @@ public class PostController {
 
     @PostMapping("/posts")
     public ResponseEntity<StatusResponseDto> createPost(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @Valid @RequestBody CreatePostRequestDto requestDto
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestPart(value = "data") @Valid CreatePostRequestDto requestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> postImage
     ) {
-        postService.createPost(userDetails.getUser(), requestDto);
+        if (postImage == null || postImage.isEmpty()) {
+            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
+        }
+
+        postService.createPost(userDetails.getUser(), requestDto, postImage);
         StatusResponseDto response = new StatusResponseDto(SuccessCode.POSTS_CREATE);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
