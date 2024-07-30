@@ -31,7 +31,7 @@ public enum ErrorCode {
     // Posts
     POST_NOT_FOUND(404, "해당 게시글을 찾을 수 없습니다."),
     FILE_UPLOAD_ERROR(400, "이미지 파일을 확인해주세요."),
-
+    NO_REPRESENTATIVE_IMAGE_FOUND(404, "대표 이미지가 없습니다."),
     // Hastags
 
     // Chats

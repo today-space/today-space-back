@@ -4,7 +4,6 @@ import com.complete.todayspace.domain.oauth.service.OAuthService;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,27 +19,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuthController {
 
-    @Value("${oauth.rest.api.key.kakao}")
-    private String KAKAO_CLIENT_ID;
-
-    @Value("${oauth.rest.api.key.naver}")
-    private String NAVER_CLIENT_ID;
-
-    @Value("${oauth.rest.api.secret.key.naver}")
-    private String NAVER_CLIENT_SECRET;
-
-    @Value("${oauth.rest.api.key.google}")
-    private String GOOGLE_CLIENT_ID;
-
-    @Value("${oauth.rest.api.secret.key.google}")
-    private String GOOGLE_CLIENT_SECRET;
-
     private final OAuthService oAuthService;
 
     @GetMapping("/kakao/callback")
     public ResponseEntity<StatusResponseDto> kakao(@RequestParam String code) throws IOException {
 
-        HttpHeaders headers = oAuthService.kakao(code, KAKAO_CLIENT_ID);
+        HttpHeaders headers = oAuthService.kakao(code);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
 
@@ -50,7 +34,7 @@ public class OAuthController {
     @GetMapping("/naver/callback")
     public ResponseEntity<StatusResponseDto> naver(@RequestParam String code) throws IOException {
 
-        HttpHeaders headers = oAuthService.naver(code, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
+        HttpHeaders headers = oAuthService.naver(code);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
 
@@ -60,7 +44,7 @@ public class OAuthController {
     @GetMapping("/google/callback")
     public ResponseEntity<StatusResponseDto> google(@RequestParam String code) throws IOException {
 
-        HttpHeaders headers = oAuthService.google(code, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
+        HttpHeaders headers = oAuthService.google(code);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SOCIAL_LOGIN);
 
