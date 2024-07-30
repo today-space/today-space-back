@@ -1,11 +1,14 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.like.repository.LikeRepository;
+import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
+import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -29,6 +32,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
+    private final LikeService likeService;
+    private final LikeRepository likeRepository;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
@@ -127,6 +132,20 @@ public class PostService {
     }
 
     public Page<PostMainResponseDto> getTopLikedPosts() {
-        return null;
+        int size = 4;
+
+        Page<Post> postPage = likeRepository.findTopLikedPosts(PageRequest.of(1, size));
+
+        return postPage.map(post -> {
+            List<ImagePost> images = imagePostRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
+
+            ImagePost firstImage = images.isEmpty() ? null : images.get(0);
+
+            if (firstImage == null) {
+                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+            }
+
+            return new PostMainResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()));
+        });
     }
 }
