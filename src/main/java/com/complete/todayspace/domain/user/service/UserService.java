@@ -113,16 +113,12 @@ public class UserService {
         }
 
         if (requestDto != null) {
-            validModifyProfileRequestDto(requestDto);
 
-            if (isChangePasswordRequest(requestDto)) {
+            validPassword(requestDto, user);
 
-                validPassword(requestDto, user);
+            String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
+            user.modifyPassword(encryptedPassword);
 
-                String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
-                user.modifyPassword(encryptedPassword);
-
-            }
         }
 
         if (profileImage != null && !profileImage.isEmpty()) {
@@ -147,23 +143,6 @@ public class UserService {
 
     private User findById(Long id) {
         return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    private void validModifyProfileRequestDto(ModifyProfileRequestDto requestDto) {
-
-        boolean hasPassword = requestDto.getPassword() != null;
-        boolean hasNewPassword = requestDto.getNewPassword() != null;
-        boolean hasCheckPassword = requestDto.getCheckPassword() != null;
-        boolean isPasswordRequestValid = (hasPassword && hasNewPassword && hasCheckPassword) || (!hasPassword && !hasNewPassword && !hasCheckPassword);
-
-        if (!isPasswordRequestValid) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-    }
-
-    private boolean isChangePasswordRequest(ModifyProfileRequestDto requestDto) {
-        return requestDto.getPassword() != null && requestDto.getNewPassword() != null && requestDto.getCheckPassword() != null;
     }
 
     private void validPassword(ModifyProfileRequestDto requestDto, User user) {
