@@ -6,9 +6,7 @@ import com.complete.todayspace.domain.hashtag.entity.Hashtag;
 import com.complete.todayspace.domain.hashtag.entity.HashtagList;
 import com.complete.todayspace.domain.hashtag.repository.HashtagListRepository;
 import com.complete.todayspace.domain.hashtag.repository.HashtagRepository;
-import com.complete.todayspace.domain.hashtag.service.HashtagService;
 import com.complete.todayspace.domain.like.repository.LikeRepository;
-import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
@@ -35,9 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
-    private final LikeService likeService;
     private final LikeRepository likeRepository;
-    private final HashtagService hashtagService;
     private final HashtagListRepository hashtagListRepository;
     private final HashtagRepository hashtagRepository;
 
@@ -55,6 +51,7 @@ public class PostService {
         }
 
         List<String> hashtags = requestDto.getHashtags();
+
         if (hashtags != null && !hashtags.isEmpty()) {
             for (String tagName : hashtags) {
                 HashtagList hashtagList = hashtagListRepository.findByHashtagName(tagName);
@@ -71,6 +68,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
+
         Page<Post> postPage = postRepository.findAll(pageable);
 
         return postPage.map(post -> {
@@ -92,6 +90,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostsByHashtag(String hashtag, Pageable pageable) {
+
         HashtagList hashtagList = hashtagListRepository.findByHashtagName(hashtag);
         if (hashtagList == null) {
             throw new CustomException(ErrorCode.HASHTAG_NOT_FOUND);
@@ -128,7 +127,6 @@ public class PostService {
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
 
-        // 기존 이미지 삭제
         List<Long> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
             for (Long imageId : deleteImageIds) {
@@ -139,7 +137,6 @@ public class PostService {
             }
         }
 
-        // 새로운 이미지 추가
         List<MultipartFile> newImages = requestDto.getNewImages();
         if (newImages != null && !newImages.isEmpty()) {
             List<String> fileUrls = s3Provider.uploadFile("post", newImages);
@@ -149,7 +146,6 @@ public class PostService {
             }
         }
 
-        // 특정 해시태그 삭제
         List<String> deleteHashtags = requestDto.getDeleteHashtags();
         if (deleteHashtags != null && !deleteHashtags.isEmpty()) {
             for (String tagName : deleteHashtags) {
@@ -161,7 +157,6 @@ public class PostService {
             }
         }
 
-        // 새로운 해시태그 추가
         List<String> newHashtags = requestDto.getHashtags();
         if (newHashtags != null && !newHashtags.isEmpty()) {
             for (String tagName : newHashtags) {
@@ -217,10 +212,6 @@ public class PostService {
 
             return new MyPostResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()), post.getCreatedAt());
         });
-    }
-
-    private boolean isPostOwner(Long postId, Long userId) {
-        return postRepository.existsByIdAndUserId(postId, userId);
     }
 
     public Page<PostMainResponseDto> getTopLikedPosts() {
