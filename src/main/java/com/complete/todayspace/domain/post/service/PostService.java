@@ -12,25 +12,19 @@ import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
-import com.complete.todayspace.domain.product.dto.ProductResponseDto;
-import com.complete.todayspace.domain.product.entity.ImageProduct;
-import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -202,7 +196,14 @@ public class PostService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
-            return new MyPostResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()), post.getCreatedAt());
+            List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
+            List<HashtagDto> hashtagDto = hashtags.stream()
+                    .map( (hashtag) -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
+                    .toList();
+
+            long likeCount = likeRepository.countByPostId(post.getId());
+
+            return new MyPostResponseDto(post.getId(), s3Provider.getS3Url(firstImage.getFilePath()), hashtagDto, likeCount);
         });
     }
 
