@@ -28,6 +28,5 @@ public class ImagePost extends CreatedTimestamp {
     public ImagePost(String fileUrl, Post savePost) {
         this.filePath = fileUrl;
         this.post = savePost;
-        this.orders = orders;
     }
 }

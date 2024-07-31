@@ -14,13 +14,9 @@ public class EditPostRequestDto {
     @NotBlank
     @Length(max = 600)
     private String content;
-
     private List<Long> deleteImageIds;
-
     private List<MultipartFile> newImages;
-
     private List<String> hashtags;
-
     private List<String> deleteHashtags;
 
     public EditPostRequestDto(String content, List<Long> deleteImageIds, List<MultipartFile> newImages,List<String> hashtags) {

@@ -6,27 +6,31 @@ import com.complete.todayspace.domain.hashtag.entity.Hashtag;
 import com.complete.todayspace.domain.hashtag.entity.HashtagList;
 import com.complete.todayspace.domain.hashtag.repository.HashtagListRepository;
 import com.complete.todayspace.domain.hashtag.repository.HashtagRepository;
-import com.complete.todayspace.domain.hashtag.service.HashtagService;
 import com.complete.todayspace.domain.like.repository.LikeRepository;
-import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
+import com.complete.todayspace.domain.product.dto.ProductResponseDto;
+import com.complete.todayspace.domain.product.entity.ImageProduct;
+import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +39,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
-    private final LikeService likeService;
     private final LikeRepository likeRepository;
-    private final HashtagService hashtagService;
     private final HashtagListRepository hashtagListRepository;
     private final HashtagRepository hashtagRepository;
 
@@ -55,6 +57,7 @@ public class PostService {
         }
 
         List<String> hashtags = requestDto.getHashtags();
+
         if (hashtags != null && !hashtags.isEmpty()) {
             for (String tagName : hashtags) {
                 HashtagList hashtagList = hashtagListRepository.findByHashtagName(tagName);
@@ -71,27 +74,15 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
+
         Page<Post> postPage = postRepository.findAll(pageable);
 
-        return postPage.map(post -> {
-            List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
-            List<PostImageDto> imageDtos = images.stream()
-                    .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
-                    .collect(Collectors.toList());
-
-            List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
-            List<HashtagDto> hashtagDtos = hashtags.stream()
-                    .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
-                    .collect(Collectors.toList());
-
-            long likeCount = likeRepository.countByPostId(post.getId());
-
-            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount);
-        });
+        return getPostResponseDto(postPage);
     }
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostsByHashtag(String hashtag, Pageable pageable) {
+
         HashtagList hashtagList = hashtagListRepository.findByHashtagName(hashtag);
         if (hashtagList == null) {
             throw new CustomException(ErrorCode.HASHTAG_NOT_FOUND);
@@ -128,7 +119,6 @@ public class PostService {
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
 
-        // 기존 이미지 삭제
         List<Long> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
             for (Long imageId : deleteImageIds) {
@@ -139,7 +129,6 @@ public class PostService {
             }
         }
 
-        // 새로운 이미지 추가
         List<MultipartFile> newImages = requestDto.getNewImages();
         if (newImages != null && !newImages.isEmpty()) {
             List<String> fileUrls = s3Provider.uploadFile("post", newImages);
@@ -149,7 +138,6 @@ public class PostService {
             }
         }
 
-        // 특정 해시태그 삭제
         List<String> deleteHashtags = requestDto.getDeleteHashtags();
         if (deleteHashtags != null && !deleteHashtags.isEmpty()) {
             for (String tagName : deleteHashtags) {
@@ -161,7 +149,6 @@ public class PostService {
             }
         }
 
-        // 새로운 해시태그 추가
         List<String> newHashtags = requestDto.getHashtags();
         if (newHashtags != null && !newHashtags.isEmpty()) {
             for (String tagName : newHashtags) {
@@ -219,25 +206,31 @@ public class PostService {
         });
     }
 
-    private boolean isPostOwner(Long postId, Long userId) {
-        return postRepository.existsByIdAndUserId(postId, userId);
-    }
+    public Page<PostResponseDto> getTopLikedPosts() {
 
-    public Page<PostMainResponseDto> getTopLikedPosts() {
         int size = 4;
 
         Page<Post> postPage = likeRepository.findTopLikedPosts(PageRequest.of(1, size));
 
+        return getPostResponseDto(postPage);
+    }
+
+    private Page<PostResponseDto> getPostResponseDto(Page<Post> postPage) {
+
         return postPage.map(post -> {
-            List<ImagePost> images = imagePostRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
+            List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
+            List<PostImageDto> imageDtos = images.stream()
+                .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
+                .collect(Collectors.toList());
 
-            ImagePost firstImage = images.isEmpty() ? null : images.get(0);
+            List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
+            List<HashtagDto> hashtagDtos = hashtags.stream()
+                .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
+                .collect(Collectors.toList());
 
-            if (firstImage == null) {
-                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
-            }
+            long likeCount = likeRepository.countByPostId(post.getId());
 
-            return new PostMainResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()));
+            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount);
         });
     }
 }
