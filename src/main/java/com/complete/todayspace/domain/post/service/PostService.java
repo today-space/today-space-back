@@ -1,6 +1,8 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.like.repository.LikeRepository;
+import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
 import com.complete.todayspace.domain.hashtag.entity.Hashtag;
 import com.complete.todayspace.domain.hashtag.entity.HashtagList;
@@ -12,6 +14,7 @@ import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
+import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -37,6 +40,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
+    private final LikeService likeService;
+    private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
     private final HashtagListRepository hashtagListRepository;
     private final HashtagRepository hashtagRepository;
@@ -184,5 +189,23 @@ public class PostService {
 
     private boolean isPostOwner(Long postId, Long userId) {
         return postRepository.existsByIdAndUserId(postId, userId);
+    }
+
+    public Page<PostMainResponseDto> getTopLikedPosts() {
+        int size = 4;
+
+        Page<Post> postPage = likeRepository.findTopLikedPosts(PageRequest.of(1, size));
+
+        return postPage.map(post -> {
+            List<ImagePost> images = imagePostRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
+
+            ImagePost firstImage = images.isEmpty() ? null : images.get(0);
+
+            if (firstImage == null) {
+                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+            }
+
+            return new PostMainResponseDto(post.getId(), post.getContent(), s3Provider.getS3Url(firstImage.getFilePath()));
+        });
     }
 }

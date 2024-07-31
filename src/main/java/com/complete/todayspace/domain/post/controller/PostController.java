@@ -9,8 +9,10 @@ import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
 import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
 import com.complete.todayspace.domain.post.dto.MyPostResponseDto;
+import com.complete.todayspace.domain.post.dto.PostMainResponseDto;
 import com.complete.todayspace.domain.post.dto.PostResponseDto;
 import com.complete.todayspace.domain.post.service.PostService;
+import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
@@ -172,6 +174,17 @@ public class PostController {
         Page<MyPostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
 
         DataResponseDto<Page<MyPostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/main/posts")
+    public ResponseEntity<DataResponseDto<Page<PostMainResponseDto>>> getTopLikedPosts(
+        @RequestParam(value = "topLiked", required = false) Boolean topLiked
+    ) {
+        Page<PostMainResponseDto> responseDto = postService.getTopLikedPosts();
+
+        DataResponseDto<Page<PostMainResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
