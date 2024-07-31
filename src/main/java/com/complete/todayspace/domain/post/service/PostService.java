@@ -1,8 +1,6 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
-import com.complete.todayspace.domain.like.repository.LikeRepository;
-import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
 import com.complete.todayspace.domain.hashtag.entity.Hashtag;
 import com.complete.todayspace.domain.hashtag.entity.HashtagList;
@@ -10,29 +8,24 @@ import com.complete.todayspace.domain.hashtag.repository.HashtagListRepository;
 import com.complete.todayspace.domain.hashtag.repository.HashtagRepository;
 import com.complete.todayspace.domain.hashtag.service.HashtagService;
 import com.complete.todayspace.domain.like.repository.LikeRepository;
+import com.complete.todayspace.domain.like.service.LikeService;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.ImagePostRepository;
 import com.complete.todayspace.domain.post.repository.PostRepository;
-import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +40,6 @@ public class PostService {
     private final HashtagService hashtagService;
     private final HashtagListRepository hashtagListRepository;
     private final HashtagRepository hashtagRepository;
-    private final LikeRepository likeRepository;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
