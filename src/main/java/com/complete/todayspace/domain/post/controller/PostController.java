@@ -1,5 +1,7 @@
 package com.complete.todayspace.domain.post.controller;
 
+import static com.complete.todayspace.domain.hashtag.entity.QHashtag.hashtag;
+
 import com.complete.todayspace.domain.comment.dto.CommentResponseDto;
 import com.complete.todayspace.domain.comment.dto.CreateCommentRequestDto;
 import com.complete.todayspace.domain.comment.service.CommentService;
@@ -70,7 +72,8 @@ public class PostController {
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
             @RequestParam(defaultValue = "1") String page,
             @RequestParam(defaultValue = "updatedAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String direction) {
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(required = false) String hashtag) {
 
         int pageNumber;
         try {
@@ -85,11 +88,17 @@ public class PostController {
         Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
         Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
 
-        Page<PostResponseDto> responseDto = postService.getPostPage(pageable);
-        DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+        Page<PostResponseDto> responseDto;
+        if (hashtag != null && !hashtag.trim().isEmpty()) {
+            responseDto = postService.getPostsByHashtag(hashtag, pageable);
+        } else {
+            responseDto = postService.getPostPage(pageable);
+        }
 
+        DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
+
 
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(

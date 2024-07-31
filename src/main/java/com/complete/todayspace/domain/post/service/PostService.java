@@ -1,6 +1,11 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
+import com.complete.todayspace.domain.hashtag.entity.Hashtag;
+import com.complete.todayspace.domain.hashtag.entity.HashtagList;
+import com.complete.todayspace.domain.hashtag.repository.HashtagListRepository;
+import com.complete.todayspace.domain.hashtag.repository.HashtagRepository;
 import com.complete.todayspace.domain.hashtag.service.HashtagService;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
@@ -10,8 +15,11 @@ import com.complete.todayspace.domain.post.repository.PostRepository;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
+import java.util.ArrayList;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,6 +38,8 @@ public class PostService {
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
     private final HashtagService hashtagService;
+    private final HashtagListRepository hashtagListRepository;
+    private final HashtagRepository hashtagRepository;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
@@ -46,7 +56,16 @@ public class PostService {
 
         List<String> hashtags = requestDto.getHashtags();
         if (hashtags != null && !hashtags.isEmpty()) {
-            hashtagService.saveHashtags(hashtags, savePost);
+            for (String tagName : hashtags) {
+                HashtagList hashtagList = hashtagListRepository.findByHashtagName(tagName);
+                if (hashtagList == null) {
+                    hashtagList = new HashtagList(tagName);
+                    hashtagListRepository.save(hashtagList);
+                }
+
+                Hashtag hashtag = new Hashtag(hashtagList, savePost);
+                hashtagRepository.save(hashtag);
+            }
         }
     }
 
@@ -60,8 +79,44 @@ public class PostService {
                     .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
                     .collect(Collectors.toList());
 
-            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos);
+            List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
+            List<HashtagDto> hashtagDtos = hashtags.stream()
+                    .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
+                    .collect(Collectors.toList());
+
+            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> getPostsByHashtag(String hashtag, Pageable pageable) {
+        HashtagList hashtagList = hashtagListRepository.findByHashtagName(hashtag);
+        if (hashtagList == null) {
+            throw new CustomException(ErrorCode.HASHTAG_NOT_FOUND);
+        }
+
+        List<Hashtag> hashtags = hashtagRepository.findByHashtagList(hashtagList);
+        List<PostResponseDto> posts = hashtags.stream()
+                .map(hashtagEntity -> {
+                    Post post = hashtagEntity.getPost();
+                    List<PostImageDto> imageDtos = imagePostRepository.findByPostId(post.getId()).stream()
+                            .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
+                            .collect(Collectors.toList());
+
+                    List<HashtagDto> hashtagDtos = hashtagRepository.findByPostId(post.getId()).stream()
+                            .map(tagEntity -> new HashtagDto(tagEntity.getHashtagList().getHashtagName()))
+                            .collect(Collectors.toList());
+
+
+                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos);
+                })
+                .sorted(Comparator.comparing(PostResponseDto::getUpdatedAt).reversed())
+                .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), posts.size());
+
+        return new PageImpl<>(posts.subList(start, end), pageable, posts.size());
     }
 
     @Transactional

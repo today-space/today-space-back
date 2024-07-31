@@ -4,10 +4,12 @@ import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.global.entity.CreatedTimestamp;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "table_hashtag")
 @Getter
+@NoArgsConstructor
 public class Hashtag extends CreatedTimestamp {
 
     @Id
