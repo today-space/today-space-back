@@ -7,6 +7,7 @@ import com.complete.todayspace.domain.hashtag.entity.HashtagList;
 import com.complete.todayspace.domain.hashtag.repository.HashtagListRepository;
 import com.complete.todayspace.domain.hashtag.repository.HashtagRepository;
 import com.complete.todayspace.domain.hashtag.service.HashtagService;
+import com.complete.todayspace.domain.like.repository.LikeRepository;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
@@ -40,6 +41,7 @@ public class PostService {
     private final HashtagService hashtagService;
     private final HashtagListRepository hashtagListRepository;
     private final HashtagRepository hashtagRepository;
+    private final LikeRepository likeRepository;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
@@ -84,7 +86,9 @@ public class PostService {
                     .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
                     .collect(Collectors.toList());
 
-            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos);
+            long likeCount = likeRepository.countByPostId(post.getId());
+
+            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount);
         });
     }
 
@@ -107,8 +111,9 @@ public class PostService {
                             .map(tagEntity -> new HashtagDto(tagEntity.getHashtagList().getHashtagName()))
                             .collect(Collectors.toList());
 
+                    long likeCount = likeRepository.countByPostId(post.getId()); // 좋아요 수 계산
 
-                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos);
+                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount); // 좋아요 수 포함
                 })
                 .sorted(Comparator.comparing(PostResponseDto::getUpdatedAt).reversed())
                 .collect(Collectors.toList());

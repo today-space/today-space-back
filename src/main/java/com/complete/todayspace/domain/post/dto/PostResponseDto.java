@@ -13,12 +13,14 @@ public class PostResponseDto {
     private final LocalDateTime updatedAt;
     private final List<PostImageDto> images;
     private final List<HashtagDto> hashtags;
+    private final long likeCount;
 
-    public PostResponseDto(Long id, String content, LocalDateTime updatedAt, List<PostImageDto> images, List<HashtagDto> hashtags) {
+    public PostResponseDto(Long id, String content, LocalDateTime updatedAt, List<PostImageDto> images, List<HashtagDto> hashtags, long likeCount) {
         this.id = id;
         this.content = content;
         this.updatedAt = updatedAt;
         this.images = images;
         this.hashtags = hashtags;
+        this.likeCount = likeCount;
     }
 }
