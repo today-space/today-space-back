@@ -18,6 +18,7 @@ import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -148,6 +149,35 @@ public class PostService {
             for (String fileUrl : fileUrls) {
                 ImagePost imagePost = new ImagePost(fileUrl, post);
                 imagePostRepository.save(imagePost);
+            }
+        }
+
+        // 특정 해시태그 삭제
+        List<String> deleteHashtags = requestDto.getDeleteHashtags();
+        if (deleteHashtags != null && !deleteHashtags.isEmpty()) {
+            for (String tagName : deleteHashtags) {
+                HashtagList hashtagList = hashtagListRepository.findByHashtagName(tagName);
+                if (hashtagList != null) {
+                    Optional<Hashtag> hashtag = hashtagRepository.findByPostIdAndHashtagListId(post.getId(), hashtagList.getId());
+                    hashtag.ifPresent(hashtagRepository::delete);
+                }
+            }
+        }
+
+        // 새로운 해시태그 추가
+        List<String> newHashtags = requestDto.getHashtags();
+        if (newHashtags != null && !newHashtags.isEmpty()) {
+            for (String tagName : newHashtags) {
+                HashtagList hashtagList = hashtagListRepository.findByHashtagName(tagName);
+                if (hashtagList == null) {
+                    hashtagList = new HashtagList(tagName);
+                    hashtagListRepository.save(hashtagList);
+                }
+
+                if (hashtagRepository.findByPostIdAndHashtagListId(post.getId(), hashtagList.getId()).isEmpty()) {
+                    Hashtag newHashtag = new Hashtag(hashtagList, post);
+                    hashtagRepository.save(newHashtag);
+                }
             }
         }
     }
