@@ -31,4 +31,10 @@ public class HashtagService {
             hashtagRepository.save(hashtag);
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<String> getTop10Hashtags() {
+        return hashtagRepository.findTop10Hashtags();
+    }
+
 }
