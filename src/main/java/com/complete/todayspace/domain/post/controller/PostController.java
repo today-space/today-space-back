@@ -108,7 +108,6 @@ public class PostController {
         @RequestPart("data") @Valid EditPostRequestDto requestDto,
         @RequestPart(value = "files", required = false) List<MultipartFile> newImages
     ) {
-        // 새로운 상태로 DTO 생성
         EditPostRequestDto updatedRequestDto = new EditPostRequestDto(
             requestDto.getContent(),
             requestDto.getDeleteImageIds(),
@@ -169,16 +168,12 @@ public class PostController {
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam Map<String, String> params
     ) {
-
         int page = PageValidation.pageValidationInParams(params);
 
-        Page<MyPostResponseDto> responseDto = postService.getMyPostList(
-            userDetails.getUser().getId(), page - 1);
-
-        DataResponseDto<Page<MyPostResponseDto>> dataResponseDto = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+        Page<MyPostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
+        DataResponseDto<Page<MyPostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
-
+  
 }

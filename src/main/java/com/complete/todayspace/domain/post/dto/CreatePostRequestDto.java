@@ -12,8 +12,6 @@ public class CreatePostRequestDto {
     @NotBlank
     @Size(max = 600)
     private String content;
-
     private List<MultipartFile> files;
-
     private List<String> hashtags;
 }

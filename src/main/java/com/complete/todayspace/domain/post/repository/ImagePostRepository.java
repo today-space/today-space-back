@@ -9,5 +9,4 @@ public interface ImagePostRepository extends JpaRepository<ImagePost, Long> {
     List<ImagePost> findByPostId(Long postId);
 
     List<ImagePost> findByPostIdOrderByCreatedAtAsc(Long postId);
-
 }
