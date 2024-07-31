@@ -7,10 +7,12 @@ import lombok.Getter;
 @Getter
 public class ModifyProfileRequestDto {
 
-    @Size(min = 4, max = 20)
-    @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*]+$")
     private String password;
 
-    private String profileImage;
+    @Size(min = 4, max = 20)
+    @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*]+$")
+    private String newPassword;
+
+    private String checkPassword;
 
 }

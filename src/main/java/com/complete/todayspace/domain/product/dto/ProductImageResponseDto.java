@@ -8,10 +8,10 @@ public class ProductImageResponseDto {
     private final Long id;
     private final Long price;
     private final String title;
-    private final ImageDto firstImage;
+    private final ImageProductDto firstImage;
 
     public ProductImageResponseDto(Long id, Long price, String title,
-        ImageDto firstImage) {
+        ImageProductDto firstImage) {
         this.id = id;
         this.price = price;
         this.title = title;

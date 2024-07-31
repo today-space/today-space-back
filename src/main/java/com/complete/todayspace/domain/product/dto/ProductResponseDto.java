@@ -16,5 +16,4 @@ public class ProductResponseDto {
         this.title = title;
         this.imagePath = imagePath;
     }
-
 }

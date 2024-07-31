@@ -7,6 +7,7 @@ import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
 import com.complete.todayspace.global.valid.PageValidation;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -24,26 +25,24 @@ public class WishController {
     private final WishService wishService;
 
     @PostMapping("/products/{productsId}/wish")
-    public ResponseEntity<StatusResponseDto> createWish(
+    public ResponseEntity<StatusResponseDto> toggleWish(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable Long productsId
+        @PathVariable @Min(1) Long productsId
     ) {
+        boolean isWish = wishService.toggleWish(userDetails.getUser(), productsId);
 
-        wishService.createWish(userDetails.getUser(), productsId);
-        StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+        StatusResponseDto response;
+        HttpStatus status;
 
-    @DeleteMapping("/products/{productsId}/wish/{wishId}")
-    public ResponseEntity<StatusResponseDto> deleteWish(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable Long productsId,
-        @PathVariable Long wishId
-    ) {
+        if (isWish) {
+            response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS);
+            status = HttpStatus.CREATED;
+        } else {
+            response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
+            status = HttpStatus.OK;
+        }
 
-        wishService.deleteWish(userDetails.getUser(), productsId, wishId);
-        StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, status);
     }
 
     @GetMapping("/my/wishs")

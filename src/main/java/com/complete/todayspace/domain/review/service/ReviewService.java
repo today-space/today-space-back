@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.review.service;
 
+import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.product.repository.ProductRepository;
 import com.complete.todayspace.domain.product.service.ProductService;
@@ -27,6 +28,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductService productService;
     private final ProductRepository productRepository;
+    private final S3Provider s3Provider;
 
     public void createReview(User user, Long productsId, ReviewRequestDto requestDto) {
 
@@ -58,7 +60,7 @@ public class ReviewService {
 
         Page<Review> reviewPage = reviewRepository.findAllByProductIdIn(productId, pageable);
 
-        return reviewPage.map( (review) -> new ReviewResponseDto(review.getContent(), review.getUser().getUsername()));
+        return reviewPage.map( (review) -> new ReviewResponseDto(review.getContent(), review.getUser().getUsername(), s3Provider.getS3Url(review.getUser().getProfileImage())));
     }
 
 }
