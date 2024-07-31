@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface HashtagRepository extends JpaRepository<Hashtag, Long> {
     List<Hashtag> findByPostId(Long postId);
     List<Hashtag> findTop5ByHashtagListOrderByPostUpdatedAtDesc(HashtagList hashtagList);
+
+    List<Hashtag> findByHashtagList(HashtagList hashtagList);
 }
