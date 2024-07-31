@@ -14,6 +14,7 @@ public enum SuccessCode {
     WITHDRAWAL(200, "회원탈퇴 성공"),
     TOKEN_REFRESH(200, "토큰 재발급 성공"),
     CHECK_USERNAME(200, "사용 가능한 아이디입니다"),
+    MODIFY_USERNAME(200, "아이디 변경 성공"),
     PROFILE_GET(200, "프로필 조회 성공"),
     PROFILE_UPDATE(200, "프로필 수정 성공"),
     PROFILE_REVIEW_GET(200, "상품 후기 조회 성공"),
