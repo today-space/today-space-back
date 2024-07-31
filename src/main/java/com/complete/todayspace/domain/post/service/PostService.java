@@ -199,6 +199,11 @@ public class PostService {
             imagePostRepository.delete(image);
         }
 
+        List<Hashtag> hashtags = hashtagRepository.findByPostId(postId);
+        for (Hashtag hashtag : hashtags) {
+            hashtagRepository.delete(hashtag);
+        }
+
         postRepository.delete(post);
     }
 
