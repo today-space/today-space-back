@@ -1,9 +1,6 @@
 package com.complete.todayspace.domain.product.controller;
 
-import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
-import com.complete.todayspace.domain.product.dto.ProductDetailResponseDto;
-import com.complete.todayspace.domain.product.dto.ProductImageResponseDto;
-import com.complete.todayspace.domain.product.dto.ProductResponseDto;
+import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -30,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
 import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
@@ -99,17 +95,17 @@ public class ProductController {
     ) {
         ProductDetailResponseDto responseDto = productService.getProduct(productsId);
         DataResponseDto<ProductDetailResponseDto> product = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+            SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
     @GetMapping("/products")
-    public ResponseEntity<DataResponseDto<Page<ProductImageResponseDto>>> getProductPage(
+    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(defaultValue = "1") String page,
         @RequestParam(value = "search", required = false) String search,
-        @RequestParam(value = "region", required = false) String region
-
+        @RequestParam(value = "region", required = false) String region,
+        @RequestParam(value = "topWished", required = false) Boolean topWished
     ) {
 
         int pageNumber;
@@ -125,9 +121,11 @@ public class ProductController {
 
         pageable = PageRequest.of(pageNumber - 1, pageable.getPageSize(), pageable.getSort());
 
-        Page<ProductImageResponseDto> responseDto;
+        Page<ProductResponseDto> responseDto;
 
-        if (search != null && region == null) {
+        if (topWished != null && topWished) {
+            responseDto = productService.getTopWishedProducts();
+        } else if (search != null && region == null) {
             responseDto = productService.getProductSearch(pageable, search);
         } else if (region != null && search == null) {
             responseDto = productService.getProductRegion(pageable, region);
@@ -137,8 +135,8 @@ public class ProductController {
             responseDto = productService.getProductPage(pageable);
         }
 
-        DataResponseDto<Page<ProductImageResponseDto>> product = new DataResponseDto<>(
-            SuccessCode.POSTS_GET, responseDto);
+        DataResponseDto<Page<ProductResponseDto>> product = new DataResponseDto<>(
+            SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 

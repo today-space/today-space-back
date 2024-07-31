@@ -1,4 +1,4 @@
-package com.complete.todayspace.domain.product.service;
+package com.complete.todayspace.domain.common;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -20,23 +20,23 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
-public class S3Service {
+public class S3Provider {
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Value("${cloud.aws.s3.base-url}")
+    private String s3BaseUrl;
+
     private final AmazonS3 s3Client;
 
-    public void createFolder(String bucketName, String folderName) {
-        s3Client.putObject(bucketName, folderName + "/", new ByteArrayInputStream(new byte[0]),
-            new ObjectMetadata());
+    public void createFolder(String folderName) {
+        s3Client.putObject(bucket, folderName + "/", new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
     }
 
-    // 여러개의 파일 업로드
-    public List<String> uploadFile(List<MultipartFile> multipartFile) {
+    public List<String> uploadFile(String folderName, List<MultipartFile> multipartFile) {
         List<String> fileNameList = new ArrayList<>();
-
-        createFolder(bucket, "product");
+        createFolder(folderName);
 
         multipartFile.forEach(file -> {
             String fileName = createFileName(file.getOriginalFilename());
@@ -46,30 +46,29 @@ public class S3Service {
 
             try (InputStream inputStream = file.getInputStream()) {
                 s3Client.putObject(
-                    new PutObjectRequest(bucket, "product/" + fileName, inputStream, objectMetadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                        new PutObjectRequest(bucket, folderName + "/" + fileName, inputStream, objectMetadata)
+                                .withCannedAcl(CannedAccessControlList.PublicRead));
             } catch (IOException e) {
                 throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
             }
 
-            fileNameList.add("product/" + fileName);
+            String filePath = folderName + "/" + fileName;
+            fileNameList.add(filePath);
+
         });
 
         return fileNameList;
     }
 
-    // 파일 삭제
-    public void deleteFile(String fileName) {
-        s3Client.deleteObject(new DeleteObjectRequest(bucket, fileName));
+    public void deleteFile(String fileUrl) {
+        String filePath = fileUrl.replace(s3BaseUrl, "");
+        s3Client.deleteObject(new DeleteObjectRequest(bucket, filePath));
     }
 
-
-    // 파일명 중복 방지 (UUID)
     private String createFileName(String fileName) {
         return UUID.randomUUID().toString().concat(getFileExtension(fileName));
     }
 
-    // 파일 유효성 검사
     private String getFileExtension(String fileName) {
         if (fileName.isEmpty()) {
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
@@ -86,5 +85,10 @@ public class S3Service {
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
         }
         return fileName.substring(fileName.lastIndexOf("."));
+    }
+
+    // S3 URL 반환하는 메소드 추가
+    public String getS3Url(String filePath) {
+        return s3BaseUrl + filePath;
     }
 }
