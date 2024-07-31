@@ -22,4 +22,8 @@ public class Hashtag extends CreatedTimestamp {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
+    public Hashtag(HashtagList hashtagList, Post post) {
+        this.hashtagList = hashtagList;
+        this.post = post;
+    }
 }

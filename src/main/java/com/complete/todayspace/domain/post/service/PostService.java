@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.post.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.hashtag.service.HashtagService;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
 import com.complete.todayspace.domain.post.entitiy.Post;
@@ -28,6 +29,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final ImagePostRepository imagePostRepository;
     private final S3Provider s3Provider;
+    private final HashtagService hashtagService;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
@@ -42,6 +44,10 @@ public class PostService {
             imagePostRepository.save(imagePost);
         }
 
+        List<String> hashtags = requestDto.getHashtags();
+        if (hashtags != null && !hashtags.isEmpty()) {
+            hashtagService.saveHashtags(hashtags, savePost);
+        }
     }
 
     @Transactional(readOnly = true)
