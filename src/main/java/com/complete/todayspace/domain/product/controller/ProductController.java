@@ -100,7 +100,7 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<DataResponseDto<Page<ProductImageResponseDto>>> getProductPage(
+    public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getProductPage(
         @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable,
         @RequestParam(defaultValue = "1") String page,
         @RequestParam(value = "search", required = false) String search,
@@ -121,7 +121,7 @@ public class ProductController {
 
         pageable = PageRequest.of(pageNumber - 1, pageable.getPageSize(), pageable.getSort());
 
-        Page<ProductImageResponseDto> responseDto;
+        Page<ProductResponseDto> responseDto;
 
         if (topWished != null && topWished) {
             responseDto = productService.getTopWishedProducts();
@@ -135,7 +135,7 @@ public class ProductController {
             responseDto = productService.getProductPage(pageable);
         }
 
-        DataResponseDto<Page<ProductImageResponseDto>> product = new DataResponseDto<>(
+        DataResponseDto<Page<ProductResponseDto>> product = new DataResponseDto<>(
             SuccessCode.PRODUCTS_GET, responseDto);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }

@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1")
@@ -88,10 +89,11 @@ public class UserController {
     @PatchMapping("/my/profile")
     public ResponseEntity<StatusResponseDto> modifyProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @Valid @RequestBody ModifyProfileRequestDto requestDto
+            @Valid @RequestPart(value = "data", required = false) ModifyProfileRequestDto requestDto,
+            @RequestPart(value = "files", required = false) MultipartFile profileImage
     ) {
 
-        userService.modifyProfile(userDetails.getUser().getId(), requestDto);
+        userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImage);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PROFILE_UPDATE);
 
