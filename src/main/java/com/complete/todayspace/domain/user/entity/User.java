@@ -67,4 +67,8 @@ public class User extends AllTimestamp {
         this.password = password;
     }
 
+    public void modifyProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
 }

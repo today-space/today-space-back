@@ -95,6 +95,7 @@ public class JwtProvider {
                 .maxAge(refreshTokenExpiration / 1000)
                 .path("/")
                 .sameSite("None")
+                .secure(true)
                 .build();
     }
 
