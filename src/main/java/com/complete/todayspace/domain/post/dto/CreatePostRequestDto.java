@@ -14,4 +14,6 @@ public class CreatePostRequestDto {
     private String content;
 
     private List<MultipartFile> files;
+
+    private List<String> hashtags;
 }

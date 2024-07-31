@@ -91,10 +91,12 @@ public class JwtProvider {
 
     public ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("RefreshToken", refreshToken)
+                .domain("today-space.com")
                 .httpOnly(true)
                 .maxAge(refreshTokenExpiration / 1000)
                 .path("/")
                 .sameSite("None")
+                .secure(true)
                 .build();
     }
 

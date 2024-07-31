@@ -1,13 +1,9 @@
 package com.complete.todayspace.domain.post.controller;
 
-import com.complete.todayspace.domain.comment.dto.CommentResponseDto;
 import com.complete.todayspace.domain.comment.dto.CreateCommentRequestDto;
 import com.complete.todayspace.domain.comment.service.CommentService;
 import com.complete.todayspace.domain.like.service.LikeService;
-import com.complete.todayspace.domain.post.dto.CreatePostRequestDto;
-import com.complete.todayspace.domain.post.dto.EditPostRequestDto;
-import com.complete.todayspace.domain.post.dto.MyPostResponseDto;
-import com.complete.todayspace.domain.post.dto.PostResponseDto;
+import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.service.PostService;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
@@ -18,29 +14,19 @@ import com.complete.todayspace.global.security.UserDetailsImpl;
 import com.complete.todayspace.global.valid.PageValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v1")
@@ -70,7 +56,8 @@ public class PostController {
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
             @RequestParam(defaultValue = "1") String page,
             @RequestParam(defaultValue = "updatedAt") String sortBy,
-            @RequestParam(defaultValue = "DESC") String direction) {
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(required = false) String hashtag) {
 
         int pageNumber;
         try {
@@ -85,11 +72,17 @@ public class PostController {
         Sort sort = Sort.by(direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
         Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
 
-        Page<PostResponseDto> responseDto = postService.getPostPage(pageable);
-        DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+        Page<PostResponseDto> responseDto;
+        if (hashtag != null && !hashtag.trim().isEmpty()) {
+            responseDto = postService.getPostsByHashtag(hashtag, pageable);
+        } else {
+            responseDto = postService.getPostPage(pageable);
+        }
 
+        DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
+
 
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(
@@ -102,7 +95,8 @@ public class PostController {
         EditPostRequestDto updatedRequestDto = new EditPostRequestDto(
                 requestDto.getContent(),
                 requestDto.getDeleteImageIds(),
-                newImages
+                newImages,
+                requestDto.getHashtags()
         );
 
         postService.editPost(userDetails.getUser().getId(), postId, requestDto);
@@ -163,6 +157,17 @@ public class PostController {
         Page<MyPostResponseDto> responseDto = postService.getMyPostList(userDetails.getUser().getId(), page - 1);
 
         DataResponseDto<Page<MyPostResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/main/posts")
+    public ResponseEntity<DataResponseDto<Page<PostMainResponseDto>>> getTopLikedPosts(
+        @RequestParam(value = "topLiked", required = false) Boolean topLiked
+    ) {
+        Page<PostMainResponseDto> responseDto = postService.getTopLikedPosts();
+
+        DataResponseDto<Page<PostMainResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }

@@ -13,8 +13,6 @@ import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -117,7 +115,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductImageResponseDto> getProductSearch(Pageable pageable, String search) {
+    public Page<ProductResponseDto> getProductSearch(Pageable pageable, String search) {
 
         Page<Product> page = productRepository.findProductsByTitleLike(pageable, search);
 
@@ -129,7 +127,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductImageResponseDto> getProductRegion(Pageable pageable, String region) {
+    public Page<ProductResponseDto> getProductRegion(Pageable pageable, String region) {
 
         Page<Product> page;
 
@@ -151,7 +149,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductImageResponseDto> getProductSearchRegion(Pageable pageable, String search,
+    public Page<ProductResponseDto> getProductSearchRegion(Pageable pageable, String search,
         String region) {
 
         Page<Product> page;
@@ -176,7 +174,7 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductImageResponseDto> getProductPage(Pageable pageable) {
+    public Page<ProductResponseDto> getProductPage(Pageable pageable) {
 
         Page<Product> page = productRepository.findAll(pageable);
 
@@ -229,34 +227,25 @@ public class ProductService {
         return productRepository.existsByIdAndUserId(productId, userId);
     }
 
-    private Page<ProductImageResponseDto> getProductImageResponseDtoPage(Page<Product> page) {
-        List<Long> productIds = page.getContent().stream()
-            .map(Product::getId)
-            .toList();
+    private Page<ProductResponseDto> getProductImageResponseDtoPage(Page<Product> page) {
 
-        List<ImageProduct> imageProducts = imageProductRepository.findByProductIdIn(productIds);
+        return page.map((product) -> {
 
-        Map<Long, List<ImageProductDto>> imageMap = imageProducts.stream()
-            .collect(Collectors.groupingBy(imageProduct -> imageProduct.getProduct().getId(),
-                Collectors.mapping(imageProduct -> new ImageProductDto(
-                    imageProduct.getId(),
-                    s3Provider.getS3Url(imageProduct.getFilePath())
-                ), Collectors.toList())));
+            List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(
+                product.getId());
 
-        return page.map(product -> {
-            List<ImageProductDto> productImages = imageMap.get(product.getId());
-            ImageProductDto firstImage =
-                (productImages != null && !productImages.isEmpty()) ? productImages.get(0) : null;
-            return new ProductImageResponseDto(
-                product.getId(),
-                product.getPrice(),
-                product.getTitle(),
-                firstImage
-            );
+            ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
+
+            if (firstImage == null) {
+                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+            }
+
+            return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(),
+                s3Provider.getS3Url(firstImage.getFilePath()));
         });
     }
 
-    public Page<ProductImageResponseDto> getTopWishedProducts() {
+    public Page<ProductResponseDto> getTopWishedProducts() {
         int size = 4;
 
         Page<Product> page = wishRepository.findTopWishedProducts(PageRequest.of(1, size));
