@@ -12,4 +12,5 @@ public interface LikeRepository extends JpaRepository<Like, Long>,
     QuerydslPredicateExecutor<PostMainResponseDto>, LikeRepositoryQuery {
 
     Optional<Like> findByUserIdAndPostId(Long id, Long postId);
+    long countByPostId(Long postId);
 }
