@@ -113,7 +113,8 @@ public class PostController {
         EditPostRequestDto updatedRequestDto = new EditPostRequestDto(
                 requestDto.getContent(),
                 requestDto.getDeleteImageIds(),
-                newImages
+                newImages,
+                requestDto.getHashtags()
         );
 
         postService.editPost(userDetails.getUser().getId(), postId, requestDto);
