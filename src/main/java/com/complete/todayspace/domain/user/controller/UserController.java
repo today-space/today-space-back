@@ -1,9 +1,6 @@
 package com.complete.todayspace.domain.user.controller;
 
-import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
-import com.complete.todayspace.domain.user.dto.ModifyProfileRequestDto;
-import com.complete.todayspace.domain.user.dto.ProfileResponseDto;
-import com.complete.todayspace.domain.user.dto.SignupRequestDto;
+import com.complete.todayspace.domain.user.dto.*;
 import com.complete.todayspace.domain.user.service.UserService;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
@@ -96,6 +93,21 @@ public class UserController {
         userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImage);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PROFILE_UPDATE);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PutMapping("/my/username")
+    public ResponseEntity<StatusResponseDto> modifyUsername(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ModifyUsernameRequestDto requestDto,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        userService.modifyUsername(userDetails.getUser().getId(), requestDto, request, response);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.MODIFY_USERNAME);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
