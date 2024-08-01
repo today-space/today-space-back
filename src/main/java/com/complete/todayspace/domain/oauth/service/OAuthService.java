@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.security.SecureRandom;
 import java.util.UUID;
 
 @Service
@@ -253,18 +254,37 @@ public class OAuthService {
 
     private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
 
-        String username = oAuthDto.getNickname() + oAuthDto.getId();
-        User oAuthUser = userRepository.findByoAuthId(username).orElse(null);
+        String oAuthId = oAuthDto.getNickname() + oAuthDto.getId();
+        User oAuthUser = userRepository.findByoAuthId(oAuthId).orElse(null);
 
         if (oAuthUser == null) {
 
+            String username = generateRandomUsername();
             String password = UUID.randomUUID().toString();
             String encryptedPassword = passwordEncoder.encode(password);
-            oAuthUser = new User(username, encryptedPassword, null, UserRole.USER, UserState.ACTIVE, username);
+            oAuthUser = new User(username, encryptedPassword, null, UserRole.USER, UserState.ACTIVE, oAuthId);
 
         }
 
         return oAuthUser;
+    }
+
+    private String generateRandomUsername() {
+
+        String usernameCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
+        int usernameLength = 20;
+        SecureRandom random = new SecureRandom();
+        StringBuilder username = new StringBuilder(usernameLength);
+
+        for (int i = 0; i < usernameLength; i++) {
+
+            int index = random.nextInt(usernameCharacters.length());
+
+            username.append(usernameCharacters.charAt(index));
+
+        }
+
+        return username.toString();
     }
 
 }

@@ -1,10 +1,7 @@
 package com.complete.todayspace.domain.user.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
-import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
-import com.complete.todayspace.domain.user.dto.ModifyProfileRequestDto;
-import com.complete.todayspace.domain.user.dto.ProfileResponseDto;
-import com.complete.todayspace.domain.user.dto.SignupRequestDto;
+import com.complete.todayspace.domain.user.dto.*;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
@@ -39,9 +36,7 @@ public class UserService {
 
     public void signup(SignupRequestDto requestDto) {
 
-        if (userRepository.existsByUsername(requestDto.getUsername())) {
-            throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
-        }
+        validUsernameUnique(requestDto.getUsername());
 
         String encryptedPassword = passwordEncoder.encode(requestDto.getPassword());
         User user = new User(requestDto.getUsername(), encryptedPassword, requestDto.getProfileImage(), UserRole.USER, UserState.ACTIVE);
@@ -115,16 +110,12 @@ public class UserService {
         }
 
         if (requestDto != null) {
-            validModifyProfileRequestDto(requestDto);
 
-            if (isChangePasswordRequest(requestDto)) {
+            validPassword(requestDto, user);
 
-                validPassword(requestDto, user);
+            String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
+            user.modifyPassword(encryptedPassword);
 
-                String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
-                user.modifyPassword(encryptedPassword);
-
-            }
         }
 
         if (profileImage != null && !profileImage.isEmpty()) {
@@ -141,6 +132,45 @@ public class UserService {
 
     }
 
+    @Transactional
+    public void modifyUsername(Long id, ModifyUsernameRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
+
+        validUsernameUnique(requestDto.getUsername());
+
+        User user = findById(id);
+        user.modifyUsername(requestDto.getUsername());
+
+        String refreshToken = jwtProvider.getRefreshTokenFromHeader(request);
+
+        if (!StringUtils.hasText(refreshToken)) {
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND_FOR_COOKIE);
+        }
+
+        try {
+
+            Claims userInfo = jwtProvider.getClaimsFromToken(refreshToken);
+            Date expirationDate = userInfo.getExpiration();
+
+            if (!user.getRefreshToken().equals(refreshToken)) {
+                throw new CustomException(ErrorCode.TOKEN_MISMATCH);
+            }
+
+            String newAccessToken = jwtProvider.generateAccessToken(requestDto.getUsername(), user.getRole().toString());
+            String newRefreshToken = jwtProvider.generateToken(requestDto.getUsername(), user.getRole().toString(), expirationDate);
+            ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(newRefreshToken);
+            jwtProvider.addAccessTokenHeader(response, newAccessToken);
+            jwtProvider.addRefreshTokenCookie(response, responseCookie.toString());
+
+            user.updateRefreshToken(newRefreshToken);
+
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
+        } catch (JwtException e) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+    }
+
     public void checkUsername(CheckUsernameRequestDto requestDto) {
         if (userRepository.existsByUsername(requestDto.getUsername())) {
             throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
@@ -149,23 +179,6 @@ public class UserService {
 
     private User findById(Long id) {
         return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-    }
-
-    private void validModifyProfileRequestDto(ModifyProfileRequestDto requestDto) {
-
-        boolean hasPassword = requestDto.getPassword() != null;
-        boolean hasNewPassword = requestDto.getNewPassword() != null;
-        boolean hasCheckPassword = requestDto.getCheckPassword() != null;
-        boolean isPasswordRequestValid = (hasPassword && hasNewPassword && hasCheckPassword) || (!hasPassword && !hasNewPassword && !hasCheckPassword);
-
-        if (!isPasswordRequestValid) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
-    }
-
-    private boolean isChangePasswordRequest(ModifyProfileRequestDto requestDto) {
-        return requestDto.getPassword() != null && requestDto.getNewPassword() != null && requestDto.getCheckPassword() != null;
     }
 
     private void validPassword(ModifyProfileRequestDto requestDto, User user) {
@@ -184,6 +197,12 @@ public class UserService {
 
     private boolean isCheckPassword(String password, String dbPassword) {
         return passwordEncoder.matches(password, dbPassword);
+    }
+
+    private void validUsernameUnique(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
+        }
     }
 
 }

@@ -15,7 +15,7 @@ public class User extends AllTimestamp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column
     private String username;
 
     @Column
@@ -61,6 +61,10 @@ public class User extends AllTimestamp {
 
     public void withdrawal() {
         this.state = UserState.LEAVE;
+    }
+
+    public void modifyUsername(String username) {
+        this.username = username;
     }
 
     public void modifyPassword(String password) {

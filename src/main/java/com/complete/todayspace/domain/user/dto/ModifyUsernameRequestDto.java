@@ -6,17 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public class ModifyProfileRequestDto {
-
-    @NotBlank
-    private String password;
+public class ModifyUsernameRequestDto {
 
     @NotBlank
     @Size(min = 4, max = 20)
-    @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*]+$")
-    private String newPassword;
-
-    @NotBlank
-    private String checkPassword;
+    @Pattern(regexp = "^[a-z0-9]+$")
+    private String username;
 
 }
