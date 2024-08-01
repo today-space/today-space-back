@@ -237,6 +237,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostResponseDto getPost(Long postId) {
-        return null;
+
+        return postRepository.findPostById(postId);
     }
 }
