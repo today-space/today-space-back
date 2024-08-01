@@ -58,6 +58,7 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+
     @PutMapping("/products/{productsId}")
     public ResponseEntity<StatusResponseDto> editProduct(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
