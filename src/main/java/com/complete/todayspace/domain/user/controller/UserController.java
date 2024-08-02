@@ -34,9 +34,12 @@ public class UserController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<StatusResponseDto> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<StatusResponseDto> logout(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response
+    ) {
 
-        userService.logout(userDetails.getUser().getId());
+        userService.logout(userDetails.getUser().getId(), response);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.LOGOUT);
 
