@@ -38,8 +38,7 @@ public class PostService {
     private final HashtagRepository hashtagRepository;
 
     @Transactional
-    public void createPost(User user, CreatePostRequestDto requestDto,  List<MultipartFile> postImage) {
-
+    public void createPost(User user, CreatePostRequestDto requestDto, List<MultipartFile> postImage) {
         List<String> fileUrls = s3Provider.uploadFile("post", postImage);
 
         Post savePost = new Post(requestDto.getContent(), user);
@@ -68,7 +67,6 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
-
         Page<Post> postPage = postRepository.findAll(pageable);
 
         return getPostResponseDto(postPage);
@@ -76,7 +74,6 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostsByHashtag(String hashtag, Pageable pageable) {
-
         HashtagList hashtagList = hashtagListRepository.findByHashtagName(hashtag);
         if (hashtagList == null) {
             throw new CustomException(ErrorCode.HASHTAG_NOT_FOUND);
@@ -94,9 +91,20 @@ public class PostService {
                             .map(tagEntity -> new HashtagDto(tagEntity.getHashtagList().getHashtagName()))
                             .collect(Collectors.toList());
 
-                    long likeCount = likeRepository.countByPostId(post.getId()); // 좋아요 수 계산
+                    long likeCount = likeRepository.countByPostId(post.getId());
 
-                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount); // 좋아요 수 포함
+                    User user = post.getUser();
+
+                    return new PostResponseDto(
+                            post.getId(),
+                            post.getContent(),
+                            post.getUpdatedAt(),
+                            imageDtos,
+                            hashtagDtos,
+                            likeCount,
+                            user.getProfileImage(),
+                            user.getUsername()
+                    );
                 })
                 .sorted(Comparator.comparing(PostResponseDto::getUpdatedAt).reversed())
                 .collect(Collectors.toList());
@@ -182,7 +190,6 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<MyPostResponseDto> getMyPostList(Long id, int page) {
-
         int size = 8;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
@@ -198,7 +205,7 @@ public class PostService {
 
             List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
             List<HashtagDto> hashtagDto = hashtags.stream()
-                    .map( (hashtag) -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
+                    .map((hashtag) -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
                     .toList();
 
             long likeCount = likeRepository.countByPostId(post.getId());
@@ -208,7 +215,6 @@ public class PostService {
     }
 
     public Page<PostResponseDto> getTopLikedPosts() {
-
         int size = 4;
 
         Page<Post> postPage = likeRepository.findTopLikedPosts(PageRequest.of(1, size));
@@ -217,21 +223,31 @@ public class PostService {
     }
 
     private Page<PostResponseDto> getPostResponseDto(Page<Post> postPage) {
-
         return postPage.map(post -> {
             List<ImagePost> images = imagePostRepository.findByPostId(post.getId());
             List<PostImageDto> imageDtos = images.stream()
-                .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
-                .collect(Collectors.toList());
+                    .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
+                    .collect(Collectors.toList());
 
             List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
             List<HashtagDto> hashtagDtos = hashtags.stream()
-                .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
-                .collect(Collectors.toList());
+                    .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
+                    .collect(Collectors.toList());
 
             long likeCount = likeRepository.countByPostId(post.getId());
 
-            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount);
+            User user = post.getUser();
+
+            return new PostResponseDto(
+                    post.getId(),
+                    post.getContent(),
+                    post.getUpdatedAt(),
+                    imageDtos,
+                    hashtagDtos,
+                    likeCount,
+                    user.getProfileImage(),
+                    user.getUsername()
+            );
         });
     }
 }
