@@ -60,7 +60,12 @@ public class ReviewService {
 
         Page<Review> reviewPage = reviewRepository.findAllByProductIdIn(productId, pageable);
 
-        return reviewPage.map( (review) -> new ReviewResponseDto(review.getContent(), review.getUser().getUsername(), s3Provider.getS3Url(review.getUser().getProfileImage())));
+        return reviewPage.map( (review) -> new ReviewResponseDto(
+                review.getContent(),
+                review.getUser().getUsername(),
+                s3Provider.getS3Url(review.getUser().getProfileImage()),
+                review.getCreatedAt().toString().substring(0, 10)
+        ));
     }
 
 }

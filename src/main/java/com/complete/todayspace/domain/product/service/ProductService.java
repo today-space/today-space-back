@@ -188,7 +188,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getMyProductList(Long id, int page) {
 
-        int size = 8;
+        int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Product> productPage = productRepository.findByUserId(id, pageable);
 

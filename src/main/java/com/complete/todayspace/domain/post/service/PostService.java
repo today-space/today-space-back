@@ -190,7 +190,8 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<MyPostResponseDto> getMyPostList(Long id, int page) {
-        int size = 8;
+
+        int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Post> postPage = postRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
 
