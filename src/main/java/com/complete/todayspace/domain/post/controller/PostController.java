@@ -100,6 +100,16 @@ public class PostController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<DataResponseDto<PostResponseDto>> getPost(
+        @Min(1) @PathVariable Long postId
+    ) {
+        PostResponseDto responseDto = postService.getPost(postId);
+
+        DataResponseDto<PostResponseDto> response = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,

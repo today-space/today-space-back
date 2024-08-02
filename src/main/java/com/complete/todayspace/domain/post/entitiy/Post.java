@@ -1,8 +1,11 @@
 package com.complete.todayspace.domain.post.entitiy;
 
+import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.entity.AllTimestamp;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,6 +25,9 @@ public class Post extends AllTimestamp {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<ImagePost> imagePosts = new ArrayList<>();
 
     public Post(String content, User user) {
         this.content = content;
