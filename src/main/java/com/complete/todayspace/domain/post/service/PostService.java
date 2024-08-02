@@ -234,4 +234,10 @@ public class PostService {
             return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount);
         });
     }
+
+    @Transactional(readOnly = true)
+    public PostResponseDto getPost(Long postId) {
+
+        return postRepository.findPostById(postId);
+    }
 }
