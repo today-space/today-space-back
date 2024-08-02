@@ -44,10 +44,8 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtProvider, userRepository);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
-
         return filter;
     }
 
@@ -59,32 +57,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.cors( cors -> {
+        http.cors(cors -> {
             CorsConfiguration corsConfiguration = new CorsConfiguration();
             corsConfiguration.setAllowedOriginPatterns(Collections.singletonList("*"));
             corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
             corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
             corsConfiguration.setExposedHeaders(List.of("Authorization", "X-Custom-Header"));
             corsConfiguration.setAllowCredentials(true);
-            cors.configurationSource( request -> corsConfiguration);
+            cors.configurationSource(request -> corsConfiguration);
         });
+
         http.csrf(AbstractHttpConfigurer::disable);
-        http.sessionManagement( (sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests( (authorizeHttpRequests) -> authorizeHttpRequests
+        http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/check").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/v1/products", "/v1/products**", "/v1/products/*",
-                                "/v1/posts", "/v1/posts/hashtags**",
+                                "/v1/posts", "/v1/posts/*", "/v1/hashtags",
                                 "/v1/kakao/callback", "/v1/naver/callback", "/v1/google/callback").permitAll()
                         .anyRequest().authenticated())
-                .exceptionHandling( (exceptionHandling) -> {
+                .exceptionHandling(exceptionHandling -> {
                     exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint);
                     exceptionHandling.accessDeniedHandler(customAccessDeniedHandler);
                 })
-                .addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter(), JwtAuthorizationFilter.class);
+
         return http.build();
     }
-
 }

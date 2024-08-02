@@ -11,6 +11,7 @@ public class ProductDetailResponseDto {
 
     private final Long id;
     private final String userName;
+    private final String userImagePath;
     private final Long price;
     private final String title;
     private final String content;
@@ -19,11 +20,12 @@ public class ProductDetailResponseDto {
     private final LocalDateTime upDateAt;
     private final List<ImageProductDto> imageUrlList;
 
-    public ProductDetailResponseDto(Long id, String userName, Long price, String title,
+    public ProductDetailResponseDto(Long id, String userName, String userImagePath, Long price, String title,
         String content, Address address,
         State state, LocalDateTime upDateAt, List<ImageProductDto> imageUrlList) {
         this.id = id;
         this.userName = userName;
+        this.userImagePath = userImagePath;
         this.price = price;
         this.title = title;
         this.content = content;

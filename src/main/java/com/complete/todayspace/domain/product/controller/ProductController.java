@@ -47,7 +47,7 @@ public class ProductController {
     public ResponseEntity<StatusResponseDto> createProduct(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @Valid @RequestPart(value = "data") CreateProductRequestDto requestDto,
-        @RequestPart(value = "product") List<MultipartFile> productImage
+        @RequestPart(value = "files") List<MultipartFile> productImage
     ) {
         if (productImage.isEmpty()) {
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
@@ -57,6 +57,7 @@ public class ProductController {
         StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_CREATE);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
 
     @PutMapping("/products/{productsId}")
     public ResponseEntity<StatusResponseDto> editProduct(

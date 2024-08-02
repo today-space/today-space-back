@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.post.controller;
 
+import com.complete.todayspace.domain.comment.dto.CommentResponseDto;
 import com.complete.todayspace.domain.comment.dto.CreateCommentRequestDto;
 import com.complete.todayspace.domain.comment.service.CommentService;
 import com.complete.todayspace.domain.like.service.LikeService;
@@ -42,9 +43,9 @@ public class PostController {
 
     @PostMapping("/posts")
     public ResponseEntity<StatusResponseDto> createPost(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestPart(value = "data") @Valid CreatePostRequestDto requestDto,
-        @RequestPart(value = "files", required = false) List<MultipartFile> postImage
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestPart(value = "data") @Valid CreatePostRequestDto requestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> postImage
     ) {
         if (postImage == null || postImage.isEmpty()) {
             throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
@@ -57,11 +58,11 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
-        @RequestParam(defaultValue = "1") String page,
-        @RequestParam(defaultValue = "updatedAt") String sortBy,
-        @RequestParam(defaultValue = "DESC") String direction,
-        @RequestParam(required = false) String hashtag,
-        @RequestParam(required = false) Boolean topLiked
+            @RequestParam(defaultValue = "1") String page,
+            @RequestParam(defaultValue = "updatedAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction,
+            @RequestParam(required = false) String hashtag,
+            @RequestParam(required = false) Boolean topLiked
     ) {
         int pageNumber;
         try {
@@ -74,7 +75,7 @@ public class PostController {
         }
 
         Sort sort = Sort.by(
-            direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
+                direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
         Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
 
         Page<PostResponseDto> responseDto;
@@ -86,35 +87,52 @@ public class PostController {
             responseDto = postService.getPostPage(pageable);
         }
 
-        DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET,
-            responseDto);
+        DataResponseDto<Page<PostResponseDto>> post = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
         return new ResponseEntity<>(post, HttpStatus.OK);
     }
 
+    @GetMapping("/posts/{postId}/comments")
+    public ResponseEntity<DataResponseDto<List<CommentResponseDto>>> getComments(
+            @PathVariable @Min(1) Long postId
+    ) {
+        List<CommentResponseDto> comments = commentService.getCommentsByPostId(postId);
+        DataResponseDto<List<CommentResponseDto>> responseDto = new DataResponseDto<>(SuccessCode.COMMENT_CREATE, comments);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/posts/{postId}")
+    public ResponseEntity<DataResponseDto<PostResponseDto>> getPost(
+        @Min(1) @PathVariable Long postId
+    ) {
+        PostResponseDto responseDto = postService.getPost(postId);
+
+        DataResponseDto<PostResponseDto> response = new DataResponseDto<>(SuccessCode.POSTS_GET, responseDto);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable @Min(1) Long postId,
-        @RequestPart("data") @Valid EditPostRequestDto requestDto,
-        @RequestPart(value = "files", required = false) List<MultipartFile> newImages
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId,
+            @RequestPart("data") @Valid EditPostRequestDto requestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> newImages
     ) {
         EditPostRequestDto updatedRequestDto = new EditPostRequestDto(
-            requestDto.getContent(),
-            requestDto.getDeleteImageIds(),
-            newImages,
-            requestDto.getHashtags()
+                requestDto.getContent(),
+                requestDto.getDeleteImageIds(),
+                newImages,
+                requestDto.getHashtags()
         );
 
-        postService.editPost(userDetails.getUser().getId(), postId, requestDto);
+        postService.editPost(userDetails.getUser().getId(), postId, updatedRequestDto);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_UPDATE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> deletePost(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable @Min(1) Long postId
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId
     ) {
         postService.deletePost(userDetails.getUser().getId(), postId);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_DELETE);
@@ -123,8 +141,8 @@ public class PostController {
 
     @PostMapping("/posts/{postId}/likes")
     public ResponseEntity<StatusResponseDto> toggleLike(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable @Min(1) Long postId
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId
     ) {
         boolean isLiked = likeService.toggleLike(userDetails.getUser(), postId);
 
@@ -142,22 +160,22 @@ public class PostController {
         return new ResponseEntity<>(response, status);
     }
 
+
+
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<StatusResponseDto> addComment(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable @Min(1) Long postId,
-        @Valid @RequestBody CreateCommentRequestDto requestDto
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId,
+            @Valid @RequestBody CreateCommentRequestDto requestDto
     ) {
         commentService.addComment(userDetails.getUser(), postId, requestDto);
-        return new ResponseEntity<>(new StatusResponseDto(SuccessCode.COMMENT_CREATE),
-            HttpStatus.CREATED);
+        return new ResponseEntity<>(new StatusResponseDto(SuccessCode.COMMENT_CREATE), HttpStatus.CREATED);
     }
-
 
     @GetMapping("/my/posts")
     public ResponseEntity<DataResponseDto<Page<MyPostResponseDto>>> getMyPostList(
-        @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @RequestParam Map<String, String> params
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Map<String, String> params
     ) {
         int page = PageValidation.pageValidationInParams(params);
 
@@ -166,5 +184,5 @@ public class PostController {
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
-  
+
 }
