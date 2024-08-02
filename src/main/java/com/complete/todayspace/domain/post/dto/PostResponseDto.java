@@ -13,7 +13,7 @@ public class PostResponseDto {
     private List<PostImageDto> images;
     private final List<HashtagDto> hashtags;
     private final long likeCount;
-    private final String profileImage;
+    private String profileImage;
     private final String nickname;
 
     public PostResponseDto(Long id, String content, LocalDateTime updatedAt, List<PostImageDto> images, List<HashtagDto> hashtags, long likeCount, String profileImage, String nickname) {
@@ -30,4 +30,9 @@ public class PostResponseDto {
     public void update(List<PostImageDto> images) {
         this.images = images;
     }
+
+    public void updateProfile(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
 }
