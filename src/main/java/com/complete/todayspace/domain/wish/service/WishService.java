@@ -52,7 +52,7 @@ public class WishService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getMyWishList(Long id, int page) {
 
-        int size = 8;
+        int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Wish> wishPage = wishRepository.findByUserId(id, pageable);
