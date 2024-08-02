@@ -15,6 +15,7 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,8 +46,13 @@ public class UserService {
     }
 
     @Transactional
-    public void logout(Long id) {
+    public void logout(Long id, HttpServletResponse response) {
+
         findById(id).updateRefreshToken(null);
+
+        ResponseCookie responseCookie = jwtProvider.deleteRefreshTokenCookie();
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
     }
 
     @Transactional
