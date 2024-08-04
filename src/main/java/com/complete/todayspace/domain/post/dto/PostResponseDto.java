@@ -1,12 +1,14 @@
 package com.complete.todayspace.domain.post.dto;
 
 import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.Getter;
 
 @Getter
 public class PostResponseDto {
+
     private final Long id;
     private final String content;
     private final LocalDateTime updatedAt;

@@ -40,6 +40,7 @@ public class CommentService {
                         comment.getPost().getId(),
                         comment.getUser().getId(),
                         comment.getUser().getUsername(), // 사용자 이름 추가
+                        comment.getUser().getProfileImage(), // 프로필 이미지 추가
                         comment.getCreatedAt()
                 ))
                 .collect(Collectors.toList());

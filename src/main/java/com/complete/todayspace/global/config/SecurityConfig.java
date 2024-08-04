@@ -73,8 +73,8 @@ public class SecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/check").permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/v1/posts", "/v1/posts/*", "/v1/posts/**", "/v1/hashtags",
                                 "/v1/products", "/v1/products**", "/v1/products/*", "/v1/users/*", "/v1/users/*/reviews",
-                                "/v1/posts", "/v1/posts/*", "/v1/hashtags",
                                 "/v1/kakao/callback", "/v1/naver/callback", "/v1/google/callback").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandling -> {

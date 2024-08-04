@@ -39,6 +39,7 @@ public class PostService {
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto, List<MultipartFile> postImage) {
+
         List<String> fileUrls = s3Provider.uploadFile("post", postImage);
 
         Post savePost = new Post(requestDto.getContent(), user);
@@ -68,7 +69,6 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponseDto> getPostPage(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
-
         return getPostResponseDto(postPage);
     }
 
@@ -91,20 +91,11 @@ public class PostService {
                             .map(tagEntity -> new HashtagDto(tagEntity.getHashtagList().getHashtagName()))
                             .collect(Collectors.toList());
 
-                    long likeCount = likeRepository.countByPostId(post.getId());
+                    long likeCount = likeRepository.countByPostId(post.getId()); // 좋아요 수 계산
+                    String profileImage = post.getUser().getProfileImage();
+                    String nickname = post.getUser().getUsername();
 
-                    User user = post.getUser();
-
-                    return new PostResponseDto(
-                            post.getId(),
-                            post.getContent(),
-                            post.getUpdatedAt(),
-                            imageDtos,
-                            hashtagDtos,
-                            likeCount,
-                            user.getProfileImage(),
-                            user.getUsername()
-                    );
+                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount, profileImage, nickname); // 좋아요 수 포함
                 })
                 .sorted(Comparator.comparing(PostResponseDto::getUpdatedAt).reversed())
                 .collect(Collectors.toList());
@@ -217,9 +208,7 @@ public class PostService {
 
     public Page<PostResponseDto> getTopLikedPosts() {
         int size = 4;
-
         Page<Post> postPage = likeRepository.findTopLikedPosts(PageRequest.of(1, size));
-
         return getPostResponseDto(postPage);
     }
 
@@ -237,24 +226,32 @@ public class PostService {
 
             long likeCount = likeRepository.countByPostId(post.getId());
 
-            User user = post.getUser();
+            String profileImage = post.getUser().getProfileImage();
+            String nickname = post.getUser().getUsername();
 
-            return new PostResponseDto(
-                    post.getId(),
-                    post.getContent(),
-                    post.getUpdatedAt(),
-                    imageDtos,
-                    hashtagDtos,
-                    likeCount,
-                    user.getProfileImage(),
-                    user.getUsername()
-            );
+            return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount, profileImage, nickname);
         });
     }
 
     @Transactional(readOnly = true)
     public PostResponseDto getPost(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-        return postRepository.findPostById(postId);
+        List<ImagePost> images = imagePostRepository.findByPostId(postId);
+        List<PostImageDto> imageDtos = images.stream()
+                .map(image -> new PostImageDto(image.getId(), image.getOrders(), s3Provider.getS3Url(image.getFilePath())))
+                .collect(Collectors.toList());
+
+        List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
+        List<HashtagDto> hashtagDtos = hashtags.stream()
+                .map(hashtag -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
+                .collect(Collectors.toList());
+
+        long likeCount = likeRepository.countByPostId(post.getId());
+
+        String profileImage = post.getUser().getProfileImage();
+        String nickname = post.getUser().getUsername();
+
+        return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount, profileImage, nickname);
     }
 }
