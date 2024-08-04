@@ -1,11 +1,14 @@
 package com.complete.todayspace.domain.post.service;
 
+import com.complete.todayspace.domain.comment.entity.Comment;
+import com.complete.todayspace.domain.comment.repository.CommentRepository;
 import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
 import com.complete.todayspace.domain.hashtag.entity.Hashtag;
 import com.complete.todayspace.domain.hashtag.entity.HashtagList;
 import com.complete.todayspace.domain.hashtag.repository.HashtagListRepository;
 import com.complete.todayspace.domain.hashtag.repository.HashtagRepository;
+import com.complete.todayspace.domain.like.entity.Like;
 import com.complete.todayspace.domain.like.repository.LikeRepository;
 import com.complete.todayspace.domain.post.dto.*;
 import com.complete.todayspace.domain.post.entitiy.ImagePost;
@@ -36,6 +39,7 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final HashtagListRepository hashtagListRepository;
     private final HashtagRepository hashtagRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public void createPost(User user, CreatePostRequestDto requestDto, List<MultipartFile> postImage) {
@@ -174,6 +178,18 @@ public class PostService {
         List<Hashtag> hashtags = hashtagRepository.findByPostId(postId);
         for (Hashtag hashtag : hashtags) {
             hashtagRepository.delete(hashtag);
+        }
+
+        // 연관된 댓글 삭제
+        List<Comment> comments = commentRepository.findByPostId(postId);
+        for (Comment comment : comments) {
+            commentRepository.delete(comment);
+        }
+
+        // 연관된 좋아요 삭제
+        List<Like> likes = likeRepository.findByPostId(postId);
+        for (Like like : likes) {
+            likeRepository.delete(like);
         }
 
         postRepository.delete(post);

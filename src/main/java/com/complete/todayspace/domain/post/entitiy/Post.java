@@ -1,5 +1,8 @@
 package com.complete.todayspace.domain.post.entitiy;
 
+import com.complete.todayspace.domain.comment.entity.Comment;
+import com.complete.todayspace.domain.hashtag.entity.Hashtag;
+import com.complete.todayspace.domain.like.entity.Like;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.entity.AllTimestamp;
@@ -26,8 +29,18 @@ public class Post extends AllTimestamp {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
     private List<ImagePost> imagePosts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    private List<Hashtag> hashtags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
 
     public Post(String content, User user) {
         this.content = content;
