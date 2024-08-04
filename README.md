@@ -67,3 +67,13 @@
   <summary> CHATS </summary>
     <img src="https://github.com/user-attachments/assets/530dd49f-44a8-40cd-8923-7b3d41de70ad">
   </details>
+
+<br>
+
+## 🌟 팀 목표 및 규칙
+|    팀 규칙    |    목표 기술    |    최종 MVP    |
+|:----:|:----:|:----:|
+|🤝 적극적으로 소통하기 <br> 📑 계획표 잘 작성하기 <br> 📝 issue 잘 작성하기 <br> 📆 일정 관리 작성 후 신경쓰며 코딩 <br> 📮 사소한 트러블 슈팅도 공유하기 |배포 : CI/CD(젠킨스), Docker(v), AWS(S3, EC2) <br> DB : PostgreSql, MongoDB <br> 프론트 : React <br> Redis, Https, | 1. 로그인 / 회원가입 / 회원탈퇴 <br> - JWT 토큰 발급을 통한 로그인 <br> - 소셜 로그인 <br><br> 2. 쇼핑(번개장터) CRUD <br> - 이미지 포함 <br> - 제목 검색 <br> - 후기 작성 <br><br> 3. 결제 <br><br>4. 마이페이지 <br> - 내 게시글, 찜, 내 상품, 후기 조회 <br><br> 5. 실시간 채팅 <br><br> 6. 게시글(인스타) / 댓글 CRUD <br> - 이미지 포함 <br> - 해시태그 검색 |
+<br>
+
+[📑 오늘의 공간 노션](https://teamsparta.notion.site/79e3ff8ab6454fcb893d48b368ee9e52)
