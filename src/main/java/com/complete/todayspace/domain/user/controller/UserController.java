@@ -115,4 +115,14 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    @GetMapping("/users/{username}")
+    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getUserInfoByUsername(@PathVariable String username) {
+
+        ProfileResponseDto responseDto = userService.getUserInfoByUsername(username);
+
+        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+    }
+
 }

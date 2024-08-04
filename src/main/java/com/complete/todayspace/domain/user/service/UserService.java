@@ -106,6 +106,13 @@ public class UserService {
         return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
     }
 
+    @Transactional(readOnly = true)
+    public ProfileResponseDto getUserInfoByUsername(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
+    }
+
     @Transactional
     public void modifyProfile(Long id, ModifyProfileRequestDto requestDto, MultipartFile profileImage) {
 
