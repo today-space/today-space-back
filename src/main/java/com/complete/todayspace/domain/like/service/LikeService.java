@@ -40,4 +40,14 @@ public class LikeService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public boolean checkIfLiked(User user, Long postId) {
+        return likeRepository.findByUserIdAndPostId(user.getId(), postId).isPresent();
+    }
+
+    @Transactional(readOnly = true)
+    public long countLikes(Long postId) {
+        return likeRepository.countByPostId(postId);
+    }
+
 }

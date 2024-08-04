@@ -18,6 +18,7 @@ import com.complete.todayspace.global.security.UserDetailsImpl;
 import com.complete.todayspace.global.valid.PageValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -139,28 +140,37 @@ public class PostController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
+    @GetMapping("/posts/{postId}/likes")
+    public ResponseEntity<DataResponseDto<Map<String, Object>>> getLikes(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable @Min(1) Long postId
+    ) {
+        boolean isLiked = likeService.checkIfLiked(userDetails.getUser(), postId);
+        long likeCount = likeService.countLikes(postId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("isLiked", isLiked);
+        response.put("likeCount", likeCount);
+
+        DataResponseDto<Map<String, Object>> responseDto = new DataResponseDto<>(SuccessCode.LIKES_CREATE, response);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
     @PostMapping("/posts/{postId}/likes")
-    public ResponseEntity<StatusResponseDto> toggleLike(
+    public ResponseEntity<DataResponseDto<Map<String, Object>>> toggleLike(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable @Min(1) Long postId
     ) {
         boolean isLiked = likeService.toggleLike(userDetails.getUser(), postId);
+        long likeCount = likeService.countLikes(postId);
 
-        StatusResponseDto response;
-        HttpStatus status;
+        Map<String, Object> response = new HashMap<>();
+        response.put("isLiked", isLiked);
+        response.put("likeCount", likeCount);
 
-        if (isLiked) {
-            response = new StatusResponseDto(SuccessCode.LIKES_CREATE);
-            status = HttpStatus.CREATED;
-        } else {
-            response = new StatusResponseDto(SuccessCode.LIKES_DELETE);
-            status = HttpStatus.OK;
-        }
-
-        return new ResponseEntity<>(response, status);
+        DataResponseDto<Map<String, Object>> responseDto = new DataResponseDto<>(SuccessCode.LIKES_CREATE, response);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
-
-
 
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<StatusResponseDto> addComment(
