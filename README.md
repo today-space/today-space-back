@@ -20,9 +20,9 @@
 
 ## 🛠️ 개발 환경
 *  __Tech__ : <img src="https://img.shields.io/badge/Java-007396?style=flat-square&logo=Java&logoColor=white">  <img src="https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=Spring&logoColor=white"/>
-*  __IDE__ : IntelliJ
+*  __IDE__ : ![IntelliJ](https://img.shields.io/badge/IntelliJ-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 *  __JDK__ : 17
-*  __DB__ : PostgreSql
+*  __DB__ : ![PostgreSQL](https://img.shields.io/badge/postgresql-%23336791.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 <br>
 
 ## 🌾 프로젝트 내용
