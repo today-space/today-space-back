@@ -74,7 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/check").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/v1/products", "/v1/products**", "/v1/products/*",
-                                "/v1/posts", "/v1/posts/*", "/v1/hashtags",
+                                "/v1/posts", "/v1/posts/*", "/v1/posts/**", "/v1/hashtags",
                                 "/v1/kakao/callback", "/v1/naver/callback", "/v1/google/callback").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandling -> {
