@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.product.entity;
 
 import com.complete.todayspace.domain.user.entity.User;
+import com.complete.todayspace.domain.wish.entity.Wish;
 import com.complete.todayspace.global.entity.AllTimestamp;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -41,6 +42,9 @@ public class Product extends AllTimestamp {
 
     @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<ImageProduct> imageProducts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    private List<Wish> wish = new ArrayList<>();
 
     public Product(Long id, Long price, String title, String content, Address address, State state, User user){
         this.id = id;
