@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.wish.service;
 
+import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
@@ -28,6 +29,7 @@ public class WishService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
+    private final S3Provider s3Provider;
 
     public boolean toggleWish(User user, Long productsId) {
 
@@ -52,7 +54,7 @@ public class WishService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getMyWishList(Long id, int page) {
 
-        int size = 8;
+        int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         Page<Wish> wishPage = wishRepository.findByUserId(id, pageable);
@@ -76,8 +78,12 @@ public class WishService {
                     throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
                 }
 
-                return new ProductResponseDto(product.getId(), product.getPrice(),
-                    product.getTitle(), firstImage.getFilePath());
+                return new ProductResponseDto(
+                        product.getId(),
+                        product.getPrice(),
+                        product.getTitle(),
+                        s3Provider.getS3Url(firstImage.getFilePath())
+                );
             }).collect(Collectors.toList());
 
         return new PageImpl<>(productResponseDto, pageable, wishPage.getTotalElements());

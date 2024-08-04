@@ -109,7 +109,7 @@ public class ProductService {
             ))
             .toList();
 
-        return new ProductDetailResponseDto(product.getId(), product.getUser().getUsername(),
+        return new ProductDetailResponseDto(product.getId(), product.getUser().getUsername(), product.getUser().getProfileImage(),
             product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
             product.getState(), product.getUpdatedAt(), imageUrlList);
     }
@@ -188,7 +188,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getMyProductList(Long id, int page) {
 
-        int size = 8;
+        int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Product> productPage = productRepository.findByUserId(id, pageable);
 

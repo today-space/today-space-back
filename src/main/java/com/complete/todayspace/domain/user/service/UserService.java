@@ -15,6 +15,7 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,8 +46,13 @@ public class UserService {
     }
 
     @Transactional
-    public void logout(Long id) {
+    public void logout(Long id, HttpServletResponse response) {
+
         findById(id).updateRefreshToken(null);
+
+        ResponseCookie responseCookie = jwtProvider.deleteRefreshTokenCookie();
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
     }
 
     @Transactional
@@ -96,6 +102,13 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileResponseDto getProfile(Long id) {
         User user = findById(id);
+
+        return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileResponseDto getUserInfoByUsername(String username) {
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
     }

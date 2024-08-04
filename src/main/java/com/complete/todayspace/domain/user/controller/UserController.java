@@ -34,9 +34,12 @@ public class UserController {
     }
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<StatusResponseDto> logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<StatusResponseDto> logout(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response
+    ) {
 
-        userService.logout(userDetails.getUser().getId());
+        userService.logout(userDetails.getUser().getId(), response);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.LOGOUT);
 
@@ -110,6 +113,16 @@ public class UserController {
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.MODIFY_USERNAME);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/users/{username}")
+    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getUserInfoByUsername(@PathVariable String username) {
+
+        ProfileResponseDto responseDto = userService.getUserInfoByUsername(username);
+
+        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_GET, responseDto);
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
 }
