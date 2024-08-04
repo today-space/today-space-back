@@ -100,6 +100,17 @@ public class JwtProvider {
                 .build();
     }
 
+    public ResponseCookie deleteRefreshTokenCookie() {
+        return ResponseCookie.from("RefreshToken", "")
+                .domain("today-space.com")
+                .httpOnly(true)
+                .maxAge(0)
+                .path("/")
+                .sameSite("None")
+                .secure(true)
+                .build();
+    }
+
     public void addAccessTokenHeader(HttpServletResponse response, String accessToken) {
         response.addHeader(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken);
     }
