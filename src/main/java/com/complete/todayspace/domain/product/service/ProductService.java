@@ -117,7 +117,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductSearch(Pageable pageable, String search) {
 
-        Page<Product> page = productRepository.findProductsByTitleLike(pageable, search);
+        Page<Product> page = productRepository.findProductsByTitleLike(pageable, ("%" + search + "%"));
 
         if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
