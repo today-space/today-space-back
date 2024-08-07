@@ -19,10 +19,11 @@ public class EditPostRequestDto {
     private List<String> hashtags;
     private List<String> deleteHashtags;
 
-    public EditPostRequestDto(String content, List<Long> deleteImageIds, List<MultipartFile> newImages,List<String> hashtags) {
+    public EditPostRequestDto(String content, List<Long> deleteImageIds, List<MultipartFile> newImages, List<String> hashtags, List<String> deleteHashtags) {
         this.content = content;
         this.deleteImageIds = deleteImageIds;
         this.newImages = newImages;
         this.hashtags = hashtags;
+        this.deleteHashtags = deleteHashtags;
     }
 }

@@ -116,6 +116,7 @@ public class PostService {
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
 
+        // Remove images
         List<Long> deleteImageIds = requestDto.getDeleteImageIds();
         if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
             for (Long imageId : deleteImageIds) {
@@ -126,6 +127,7 @@ public class PostService {
             }
         }
 
+        // Add new images
         List<MultipartFile> newImages = requestDto.getNewImages();
         if (newImages != null && !newImages.isEmpty()) {
             List<String> fileUrls = s3Provider.uploadFile("post", newImages);
@@ -135,6 +137,7 @@ public class PostService {
             }
         }
 
+        // Remove hashtags
         List<String> deleteHashtags = requestDto.getDeleteHashtags();
         if (deleteHashtags != null && !deleteHashtags.isEmpty()) {
             for (String tagName : deleteHashtags) {
@@ -146,6 +149,7 @@ public class PostService {
             }
         }
 
+        // Add new hashtags
         List<String> newHashtags = requestDto.getHashtags();
         if (newHashtags != null && !newHashtags.isEmpty()) {
             for (String tagName : newHashtags) {
@@ -162,6 +166,7 @@ public class PostService {
             }
         }
     }
+
 
     @Transactional
     public void deletePost(Long userId, Long postId) {

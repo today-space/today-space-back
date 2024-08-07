@@ -122,7 +122,8 @@ public class PostController {
                 requestDto.getContent(),
                 requestDto.getDeleteImageIds(),
                 newImages,
-                requestDto.getHashtags()
+                requestDto.getHashtags(),
+                requestDto.getDeleteHashtags() // 삭제할 해시태그 목록 추가
         );
 
         postService.editPost(userDetails.getUser().getId(), postId, updatedRequestDto);
