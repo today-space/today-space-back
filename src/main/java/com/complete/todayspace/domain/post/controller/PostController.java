@@ -19,6 +19,7 @@ import com.complete.todayspace.global.valid.PageValidation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/v1")
@@ -93,17 +93,21 @@ public class PostController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<DataResponseDto<List<CommentResponseDto>>> getComments(
-            @PathVariable @Min(1) Long postId
+    public ResponseEntity<DataResponseDto<Page<CommentResponseDto>>> getComments(
+            @PathVariable @Min(1) Long postId,
+            @RequestParam(defaultValue = "1") int page
     ) {
-        List<CommentResponseDto> comments = commentService.getCommentsByPostId(postId);
-        DataResponseDto<List<CommentResponseDto>> responseDto = new DataResponseDto<>(SuccessCode.COMMENT_CREATE, comments);
+        int pageNumber = page - 1; // 페이지 번호는 0부터 시작
+
+        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("createdAt").descending());
+        Page<CommentResponseDto> comments = commentService.getCommentsByPostId(postId, pageable);
+        DataResponseDto<Page<CommentResponseDto>> responseDto = new DataResponseDto<>(SuccessCode.COMMENT_CREATE, comments);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
     @GetMapping("/posts/{postId}")
     public ResponseEntity<DataResponseDto<PostResponseDto>> getPost(
-        @Min(1) @PathVariable Long postId
+            @Min(1) @PathVariable Long postId
     ) {
         PostResponseDto responseDto = postService.getPost(postId);
 
