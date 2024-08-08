@@ -128,7 +128,7 @@ public class OAuthService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", CLIENT_ID);
-        body.add("redirect_uri", "http://localhost:3000/oauth/kakao");
+        body.add("redirect_uri", "https://today-space.com/oauth/kakao");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity.post(uri)
@@ -169,7 +169,7 @@ public class OAuthService {
                 .queryParam("grant_type", "authorization_code")
                 .queryParam("client_id", GOOGLE_CLIENT_ID)
                 .queryParam("client_secret", GOOGLE_CLIENT_SECRET)
-                .queryParam("redirect_uri", "http://localhost:3000/oauth/google") // 클라이언트 리디렉션 URI
+                .queryParam("redirect_uri", "https://today-space.com/oauth/google") // 클라이언트 리디렉션 URI
                 .queryParam("code", code)
                 .build()
                 .toUri();
