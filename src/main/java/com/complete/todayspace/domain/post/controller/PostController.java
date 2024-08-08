@@ -59,25 +59,17 @@ public class PostController {
 
     @GetMapping("/posts")
     public ResponseEntity<DataResponseDto<Page<PostResponseDto>>> getPostPage(
-            @RequestParam(defaultValue = "1") String page,
+            @RequestParam Map<String, String> params,
             @RequestParam(defaultValue = "updatedAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String direction,
             @RequestParam(required = false) String hashtag,
             @RequestParam(required = false) Boolean topLiked
     ) {
-        int pageNumber;
-        try {
-            pageNumber = Integer.parseInt(page);
-            if (pageNumber < 1) {
-                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
-            }
-        } catch (NumberFormatException e) {
-            throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
-        }
+        int pageNumber = PageValidation.pageValidationInParams(params) - 1; // 0 기반 인덱스로 변환
 
         Sort sort = Sort.by(
                 direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
+        Pageable pageable = PageRequest.of(pageNumber, 5, sort);
 
         Page<PostResponseDto> responseDto;
         if (topLiked != null && topLiked) {
@@ -95,9 +87,9 @@ public class PostController {
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<DataResponseDto<Page<CommentResponseDto>>> getComments(
             @PathVariable @Min(1) Long postId,
-            @RequestParam(defaultValue = "1") int page
+            @RequestParam Map<String, String> params
     ) {
-        int pageNumber = page - 1; // 페이지 번호는 0부터 시작
+        int pageNumber = PageValidation.pageValidationInParams(params) - 1; // 0 기반 인덱스로 변환
 
         Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("createdAt").descending());
         Page<CommentResponseDto> comments = commentService.getCommentsByPostId(postId, pageable);
