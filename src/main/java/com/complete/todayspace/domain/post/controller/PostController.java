@@ -77,11 +77,11 @@ public class PostController {
 
         Sort sort = Sort.by(
                 direction.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-        Pageable pageable = PageRequest.of(pageNumber, 5, sort);
+        Pageable pageable = PageRequest.of(pageNumber - 1, 5, sort);
 
         Page<PostResponseDto> responseDto;
         if (topLiked != null && topLiked) {
-            responseDto = postService.getTopLikedPosts();
+            responseDto = postService.getTopLikedPosts(PageRequest.of(0, 4));
         } else if (hashtag != null && !hashtag.trim().isEmpty()) {
             responseDto = postService.getPostsByHashtag(hashtag, pageable);
         } else {

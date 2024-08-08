@@ -95,11 +95,11 @@ public class PostService {
                             .map(tagEntity -> new HashtagDto(tagEntity.getHashtagList().getHashtagName()))
                             .collect(Collectors.toList());
 
-                    long likeCount = likeRepository.countByPostId(post.getId()); // 좋아요 수 계산
+                    long likeCount = likeRepository.countByPostId(post.getId());
                     String profileImage = post.getUser().getProfileImage();
                     String nickname = post.getUser().getUsername();
 
-                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount, profileImage, nickname); // 좋아요 수 포함
+                    return new PostResponseDto(post.getId(), post.getContent(), post.getUpdatedAt(), imageDtos, hashtagDtos, likeCount, profileImage, nickname);
                 })
                 .sorted(Comparator.comparing(PostResponseDto::getUpdatedAt).reversed())
                 .collect(Collectors.toList());
@@ -222,7 +222,7 @@ public class PostService {
         });
     }
 
-    public Page<PostResponseDto> getTopLikedPosts() {
+    public Page<PostResponseDto> getTopLikedPosts(PageRequest pageRequest) {
         int size = 4;
         Page<Post> postPage = likeRepository.findTopLikedPosts(PageRequest.of(1, size));
         return getPostResponseDto(postPage);
