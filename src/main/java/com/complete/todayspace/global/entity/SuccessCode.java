@@ -39,7 +39,7 @@ public enum SuccessCode {
     PRODUCTS_WISHS(200, "상품 찜 추가 성공"),
     PRODUCTS_WISHS_DELETE(200, "상품 찜 삭제 성공"),
     PAYMENTS(201, "결제 추가 성공"),
-    CHATS_CREATE(201, "채팅방 추가 성공"),
+    CHAT_ROOM_CREATE(201, "채팅방 추가 성공"),
     CHATS_GET(200, "채팅방 조회 성공"),
     CHATS_DELETE(204, "채팅방 삭제 성공"),
     HASHTAGS_TOP10(200, "해시태그 Top 10 조회 성공");
