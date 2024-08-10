@@ -45,6 +45,7 @@ public enum ErrorCode {
     HASHTAG_NOT_FOUND(400, "해시태그를 찾을 수 없습니다."),
 
     // Chats
+    NO_CHAT_MYSELF(400, "자신과는 채팅할 수 없습니다."),
 
     // JWT
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),

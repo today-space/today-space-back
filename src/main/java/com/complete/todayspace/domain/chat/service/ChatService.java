@@ -24,21 +24,29 @@ public class ChatService {
     @Transactional
     public void enterChatRoom(Long id, ChatRoomRequestDto requestDto) {
 
-        Long postId = requestDto.getProductId();
+        Long productId = requestDto.getProductId();
         Long seller = requestDto.getSeller();
 
-        Product product = productService.findByProduct(postId);
+        Product product = productService.findByProduct(productId);
+        Long productUserId = product.getUser().getId();
 
-        if (!product.getUser().getId().equals(seller)) {
+        if (!productUserId.equals(seller)) {
             throw new CustomException(ErrorCode.PRODUCT_NOT_OWNER);
         }
 
         User user = userService.findById(id);
-        String roomId = postId + user.getUsername();
+        Long userId = user.getId();
+        String username = user.getUsername();
+
+        if (seller.equals(userId)) {
+            throw new CustomException(ErrorCode.NO_CHAT_MYSELF);
+        }
+
+        String roomId = productId + username;
 
         if (!chatRoomRepository.existsByRoomId(roomId)) {
 
-            ChatRoom chatRoom = new ChatRoom(roomId, seller, user.getId());
+            ChatRoom chatRoom = new ChatRoom(roomId, seller, userId);
             chatRoomRepository.save(chatRoom);
 
         }
