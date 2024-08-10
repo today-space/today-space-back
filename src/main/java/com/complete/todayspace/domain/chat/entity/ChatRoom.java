@@ -1,6 +1,5 @@
 package com.complete.todayspace.domain.chat.entity;
 
-import com.complete.todayspace.domain.chat.dto.ChatRoomRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,10 +23,10 @@ public class ChatRoom {
     @Column
     private Long buyer;
 
-    public ChatRoom(ChatRoomRequestDto requestDto) {
-        this.roomId = requestDto.getRoomId();
-        this.seller = requestDto.getSeller();
-        this.buyer = requestDto.getBuyer();
+    public ChatRoom(String roomId, Long seller, Long buyer) {
+        this.roomId = roomId;
+        this.seller = seller;
+        this.buyer = buyer;
     }
 
 }

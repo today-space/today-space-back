@@ -3,6 +3,12 @@ package com.complete.todayspace.domain.chat.service;
 import com.complete.todayspace.domain.chat.dto.ChatRoomRequestDto;
 import com.complete.todayspace.domain.chat.entity.ChatRoom;
 import com.complete.todayspace.domain.chat.repository.ChatRoomRepository;
+import com.complete.todayspace.domain.product.entity.Product;
+import com.complete.todayspace.domain.product.service.ProductService;
+import com.complete.todayspace.domain.user.entity.User;
+import com.complete.todayspace.domain.user.service.UserService;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +18,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ProductService productService;
+    private final UserService userService;
 
     @Transactional
-    public void createChatRoom(ChatRoomRequestDto requestDto) {
+    public void enterChatRoom(Long id, ChatRoomRequestDto requestDto) {
 
-        if (!chatRoomRepository.existsByRoomId(requestDto.getRoomId())) {
+        Long postId = requestDto.getProductId();
+        Long seller = requestDto.getSeller();
 
-            ChatRoom chatRoom = new ChatRoom(requestDto);
+        Product product = productService.findByProduct(postId);
+
+        if (!product.getUser().getId().equals(seller)) {
+            throw new CustomException(ErrorCode.PRODUCT_NOT_OWNER);
+        }
+
+        User user = userService.findById(id);
+        String roomId = postId + user.getUsername();
+
+        if (!chatRoomRepository.existsByRoomId(roomId)) {
+
+            ChatRoom chatRoom = new ChatRoom(roomId, seller, user.getId());
             chatRoomRepository.save(chatRoom);
 
         }
