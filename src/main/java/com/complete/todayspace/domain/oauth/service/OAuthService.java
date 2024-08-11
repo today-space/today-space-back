@@ -51,6 +51,9 @@ public class OAuthService {
     @Value("${oauth.rest.api.secret.key.google}")
     private String GOOGLE_CLIENT_SECRET;
 
+    @Value("${front.url}")
+    private String frontURL;
+
     @Transactional
     public HttpHeaders kakao(String code) throws JsonProcessingException {
 
@@ -128,7 +131,7 @@ public class OAuthService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", CLIENT_ID);
-        body.add("redirect_uri", "https://today-space.com/oauth/kakao");
+        body.add("redirect_uri", frontURL + "/oauth/kakao");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity.post(uri)
@@ -146,7 +149,7 @@ public class OAuthService {
                 .queryParam("grant_type", "authorization_code")
                 .queryParam("client_id", NAVER_CLIENT_ID)
                 .queryParam("client_secret", NAVER_CLIENT_SECRET)
-                .queryParam("redirect_uri", "http://localhost:3000/oauth/naver")
+                .queryParam("redirect_uri", frontURL + "/oauth/naver")
                 .queryParam("code", code)
                 .build()
                 .toUri();
@@ -169,7 +172,7 @@ public class OAuthService {
                 .queryParam("grant_type", "authorization_code")
                 .queryParam("client_id", GOOGLE_CLIENT_ID)
                 .queryParam("client_secret", GOOGLE_CLIENT_SECRET)
-                .queryParam("redirect_uri", "https://today-space.com/oauth/google") // 클라이언트 리디렉션 URI
+                .queryParam("redirect_uri", frontURL + "/oauth/google")
                 .queryParam("code", code)
                 .build()
                 .toUri();
