@@ -109,7 +109,7 @@ public class ProductService {
             ))
             .toList();
 
-        return new ProductDetailResponseDto(product.getId(), product.getUser().getUsername(), product.getUser().getProfileImage(),
+        return new ProductDetailResponseDto(product.getId(), product.getUser().getId(), product.getUser().getUsername(), product.getUser().getProfileImage(),
             product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
             product.getState(), product.getUpdatedAt(), imageUrlList);
     }
