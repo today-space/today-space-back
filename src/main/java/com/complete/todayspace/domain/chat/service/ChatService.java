@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.chat.service;
 
 import com.complete.todayspace.domain.chat.dto.ChatMessageRequestDto;
+import com.complete.todayspace.domain.chat.dto.ChatMessageResponseDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomRequestDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomResponseDto;
 import com.complete.todayspace.domain.chat.entity.ChatMessage;
@@ -79,7 +80,11 @@ public class ChatService {
 
                     User user = userService.findById(userId);
 
-                    return new ChatRoomResponseDto(chatRoom.getRoomId(), user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
+                    return new ChatRoomResponseDto(
+                            chatRoom.getRoomId(),
+                            user.getUsername(),
+                            s3Provider.getS3Url(user.getProfileImage())
+                    );
                 }).toList();
     }
 
@@ -93,6 +98,24 @@ public class ChatService {
         );
         chatRepository.save(chatMessage);
 
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatMessageResponseDto> getMessageForChatRoom(Long id, String roomId) {
+
+        if (!chatRoomRepository.existsByRoomIdAndUserId(roomId, id)) {
+            throw new CustomException(ErrorCode.NO_CHAT_ROOM_OR_PERMISSION_DENIED);
+        }
+
+        List<ChatMessage> chatMessages = chatRepository.findByRoomIdOrderBySendDateDesc(roomId);
+
+        return chatMessages.stream()
+                .map( (chatMessage) -> new ChatMessageResponseDto(
+                        chatMessage.getSender(),
+                        chatMessage.getMessage(),
+                        chatMessage.getSendDate()
+                ))
+                .toList();
     }
 
 }
