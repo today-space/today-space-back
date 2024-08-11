@@ -1,8 +1,11 @@
 package com.complete.todayspace.domain.chat.service;
 
+import com.complete.todayspace.domain.chat.dto.ChatMessageRequestDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomRequestDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomResponseDto;
+import com.complete.todayspace.domain.chat.entity.ChatMessage;
 import com.complete.todayspace.domain.chat.entity.ChatRoom;
+import com.complete.todayspace.domain.chat.repository.ChatRepository;
 import com.complete.todayspace.domain.chat.repository.ChatRoomRepository;
 import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.product.entity.Product;
@@ -22,6 +25,7 @@ import java.util.List;
 public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRepository chatRepository;
     private final ProductService productService;
     private final UserService userService;
     private final S3Provider s3Provider;
@@ -77,6 +81,18 @@ public class ChatService {
 
                     return new ChatRoomResponseDto(chatRoom.getRoomId(), user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
                 }).toList();
+    }
+
+    @Transactional
+    public void sendMessage(ChatMessageRequestDto requestDto) {
+
+        ChatMessage chatMessage = new ChatMessage(
+                requestDto.getRoomId(),
+                requestDto.getSender(),
+                requestDto.getMessage()
+        );
+        chatRepository.save(chatMessage);
+
     }
 
 }

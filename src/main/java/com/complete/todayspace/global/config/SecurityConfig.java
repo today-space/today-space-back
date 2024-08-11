@@ -76,6 +76,7 @@ public class SecurityConfig {
                                 "/v1/posts", "/v1/posts/*", "/v1/posts/**", "/v1/hashtags",
                                 "/v1/products", "/v1/products**", "/v1/products/*", "/v1/users/*", "/v1/users/*/reviews",
                                 "/v1/kakao/callback", "/v1/naver/callback", "/v1/google/callback").permitAll()
+                        .requestMatchers("/v1/ws/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandling -> {
                     exceptionHandling.authenticationEntryPoint(customAuthenticationEntryPoint);
