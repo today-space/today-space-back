@@ -56,6 +56,5 @@ oauth:
         naver: ${NAVER_REST_API_KEY}
         google: ${GOOGLE_REST_API_KEY}
 
-
-
-
+front:
+  url: ${FRONT_URL}
