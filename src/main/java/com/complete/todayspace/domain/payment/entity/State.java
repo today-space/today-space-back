@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum State {
 
-    COMPLATE("완료");
+    COMPLATE("완료"),
+    PROGRESS("진행중");
 
     private final String state;
 
