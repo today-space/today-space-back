@@ -58,3 +58,17 @@ oauth:
 
 front:
   url: ${FRONT_URL}
+
+payment:
+  kakao:
+    secret:
+      key: ${KAKAO_PAY_SECRET_KEY}
+      url: ${KAKAO_PAY_URL}
+    pay:
+      cid: ${KAKAO_PAY_CID}
+
+
+
+
+
+

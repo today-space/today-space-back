@@ -52,7 +52,11 @@ public enum ErrorCode {
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),
     INVALID_TOKEN(401, "잘못된 JWT 토큰입니다."),
     TOKEN_MISMATCH(401, "토큰이 일치하지 않습니다."),
-    TOKEN_NOT_FOUND_FOR_COOKIE(401, "쿠키에 토큰이 존재하지 않습니다.");;
+    TOKEN_NOT_FOUND_FOR_COOKIE(401, "쿠키에 토큰이 존재하지 않습니다."),
+
+    //Payment
+    COMPLATED_PAYMENT(409, "결제가 완료된 상품입니다"),
+    REJECTED_PAYMENT(400, "구매가 불가능한 상품입니다");
 
     private final Integer statusCode;
     private final String message;
