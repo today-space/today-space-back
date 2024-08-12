@@ -44,6 +44,9 @@ public class PaymentService {
     @Value("${KAKAO_PAY_CID}")
     private String cid;
 
+    @Value("${front.url}")
+    private String frontURL;
+
     @Transactional
     public ReadyResponseDto readyPayment(User user, PaymentInfoRequestDto paymentInfoRequestDto) {
 
@@ -57,9 +60,9 @@ public class PaymentService {
         parameters.put("total_amount", String.valueOf(paymentInfoRequestDto.getTotal_amount()));
         parameters.put("vat_amount", "0");
         parameters.put("tax_free_amount", "0");
-        parameters.put("approval_url", "https://today-space.com/payment/success");
-        parameters.put("cancel_url", "https://today-space.com/payment/cancel");
-        parameters.put("fail_url", "https://today-space.com/payment/fail");
+        parameters.put("approval_url", frontURL + "/payment/success");
+        parameters.put("cancel_url", frontURL + "/payment/cancel");
+        parameters.put("fail_url", frontURL + "/payment/fail");
 
         HttpEntity<HashMap<String, String>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
 
@@ -117,7 +120,7 @@ public class PaymentService {
                 requestEntity,
                 KakaoApproveResponse.class);
 
-            Payment payment = paymentRepository.findByProduct_Id(productId);
+            Payment payment = paymentRepository.findByProductId(productId);
             payment.updateState(State.COMPLATE);
 
 
@@ -133,7 +136,7 @@ public class PaymentService {
     @Transactional
     public void cancelPayment(Long productId) {
 
-        Payment payment = paymentRepository.findByProduct_Id(productId);
+        Payment payment = paymentRepository.findByProductId(productId);
         paymentRepository.delete(payment);
     }
 
