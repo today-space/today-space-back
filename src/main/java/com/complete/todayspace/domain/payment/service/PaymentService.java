@@ -57,9 +57,9 @@ public class PaymentService {
         parameters.put("total_amount", String.valueOf(paymentInfoRequestDto.getTotal_amount()));
         parameters.put("vat_amount", "0");
         parameters.put("tax_free_amount", "0");
-        parameters.put("approval_url", "http://localhost:3000/payment/success");
-        parameters.put("cancel_url", "http://localhost:3000/payment/cancel");
-        parameters.put("fail_url", "http://localhost:3000/payment/fail");
+        parameters.put("approval_url", "https://today-space.com/payment/success");
+        parameters.put("cancel_url", "https://today-space.com/payment/cancel");
+        parameters.put("fail_url", "https://today-space.com/payment/fail");
 
         HttpEntity<HashMap<String, String>> requestEntity = new HttpEntity<>(parameters, this.getHeaders());
 
