@@ -24,6 +24,7 @@ public enum ErrorCode {
 
     // Products
     PRODUCT_NOT_FOUND(404, "해당 상품을 찾을 수 없습니다."),
+    PRODUCT_NOT_OWNER(403, "상품의 작성자가 아닙니다."),
     NOT_OWNER_PRODUCT(403, "작성자만 변경할 수 있습니다."),
 
     //Review
@@ -44,6 +45,7 @@ public enum ErrorCode {
     HASHTAG_NOT_FOUND(400, "해시태그를 찾을 수 없습니다."),
 
     // Chats
+    NO_CHAT_MYSELF(400, "자신과는 채팅할 수 없습니다."),
 
     // JWT
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),

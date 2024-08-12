@@ -10,10 +10,11 @@ import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,19 +32,17 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> getCommentsByPostId(Long postId) {
-        return commentRepository.findByPostId(postId)
-                .stream()
-                .map(comment -> new CommentResponseDto(
-                        comment.getId(),
-                        comment.getContent(),
-                        comment.getPost().getId(),
-                        comment.getUser().getId(),
-                        comment.getUser().getUsername(), // 사용자 이름 추가
-                        comment.getUser().getProfileImage(), // 프로필 이미지 추가
-                        comment.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
+    public Page<CommentResponseDto> getCommentsByPostId(Long postId, Pageable pageable) {
+        Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
+        return commentPage.map(comment -> new CommentResponseDto(
+                comment.getId(),
+                comment.getContent(),
+                comment.getPost().getId(),
+                comment.getUser().getId(),
+                comment.getUser().getUsername(),
+                comment.getUser().getProfileImage(),
+                comment.getCreatedAt()
+        ));
     }
 
     private Post findPostById(Long postId) {
