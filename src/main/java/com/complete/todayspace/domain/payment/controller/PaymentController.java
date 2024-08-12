@@ -28,10 +28,10 @@ public class PaymentController {
     private final PaymentService payMentService;
 
     @PostMapping("/payment/kakao")
-    public ResponseEntity<DataResponseDto<ReadyResponseDto>> kakaoPayReady(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<DataResponseDto<ReadyResponseDto>> readyPayment(@AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestBody PaymentInfoRequestDto paymentInfoRequestDto){
 
-        ReadyResponseDto payMent = payMentService.kakaoPayReady(userDetails.getUser(),
+        ReadyResponseDto payMent = payMentService.readyPayment(userDetails.getUser(),
             paymentInfoRequestDto);
 
         DataResponseDto<ReadyResponseDto> response = new DataResponseDto<>(SuccessCode.POSTS_GET, payMent);
@@ -49,7 +49,7 @@ public class PaymentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @DeleteMapping("/cancel")
+    @DeleteMapping("/payment/cancel")
     public ResponseEntity<StatusResponseDto> cancelPayment(
         @RequestParam Long productId
     ) {

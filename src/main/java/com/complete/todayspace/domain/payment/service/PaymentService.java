@@ -45,7 +45,7 @@ public class PaymentService {
     private String cid;
 
     @Transactional
-    public ReadyResponseDto kakaoPayReady(User user, PaymentInfoRequestDto paymentInfoRequestDto) {
+    public ReadyResponseDto readyPayment(User user, PaymentInfoRequestDto paymentInfoRequestDto) {
 
         HashMap<String, String> parameters = new HashMap<>();
 
