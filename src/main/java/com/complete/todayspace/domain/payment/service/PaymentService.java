@@ -71,9 +71,16 @@ public class PaymentService {
 
            Product product = productService.findByProduct(paymentInfoRequestDto.getProductId());
 
-           Optional<Payment> existingPayment = paymentRepository.findFirstByProductIdAndState(
+           Optional<Payment> existingProgress = paymentRepository.findFirstByProductIdAndState(
                paymentInfoRequestDto.getProductId(), State.PROGRESS);
-           if (existingPayment.isPresent()) {
+           Optional<Payment> existingComplate = paymentRepository.findFirstByProductIdAndState(
+               paymentInfoRequestDto.getProductId(), State.COMPLATE);
+
+           if (existingProgress.isPresent()) {
+               throw new CustomException(ErrorCode.COMPLATED_PAYMENT);
+           }
+
+           if (existingComplate.isPresent()) {
                throw new CustomException(ErrorCode.COMPLATED_PAYMENT);
            }
 
