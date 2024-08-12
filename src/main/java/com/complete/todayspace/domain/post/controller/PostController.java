@@ -29,9 +29,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1")
@@ -45,14 +42,9 @@ public class PostController {
     @PostMapping("/posts")
     public ResponseEntity<StatusResponseDto> createPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestPart(value = "data") @Valid CreatePostRequestDto requestDto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> postImage
+            @RequestBody @Valid CreatePostRequestDto requestDto
     ) {
-        if (postImage == null || postImage.isEmpty()) {
-            throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
-        }
-
-        postService.createPost(userDetails.getUser(), requestDto, postImage);
+        postService.createPost(userDetails.getUser(), requestDto);
         StatusResponseDto response = new StatusResponseDto(SuccessCode.POSTS_CREATE);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -118,19 +110,10 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     public ResponseEntity<StatusResponseDto> editPost(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable @Min(1) Long postId,
-            @RequestPart("data") @Valid EditPostRequestDto requestDto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> newImages
+            @PathVariable Long postId,
+            @RequestBody @Valid EditPostRequestDto requestDto
     ) {
-        EditPostRequestDto updatedRequestDto = new EditPostRequestDto(
-                requestDto.getContent(),
-                requestDto.getDeleteImageIds(),
-                newImages,
-                requestDto.getHashtags(),
-                requestDto.getDeleteHashtags() // 삭제할 해시태그 목록 추가
-        );
-
-        postService.editPost(userDetails.getUser().getId(), postId, updatedRequestDto);
+        postService.editPost(userDetails.getUser().getId(), postId, requestDto);
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.POSTS_UPDATE);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
