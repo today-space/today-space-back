@@ -87,8 +87,10 @@ public class S3Provider {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
-    // S3 URL 반환하는 메소드 추가
     public String getS3Url(String filePath) {
+        if (filePath.startsWith(s3BaseUrl)) {
+            return filePath;
+        }
         return s3BaseUrl + filePath;
     }
 }
