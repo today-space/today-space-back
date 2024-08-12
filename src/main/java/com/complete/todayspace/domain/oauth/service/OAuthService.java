@@ -265,7 +265,7 @@ public class OAuthService {
             String username = generateRandomUsername();
             String password = UUID.randomUUID().toString();
             String encryptedPassword = passwordEncoder.encode(password);
-            oAuthUser = new User(username, encryptedPassword, null, UserRole.USER, UserState.ACTIVE, oAuthId);
+            oAuthUser = new User(username, encryptedPassword, "profile/defaultProfileImg.png", UserRole.USER, UserState.ACTIVE, oAuthId);
 
         }
 
