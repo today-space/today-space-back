@@ -107,7 +107,7 @@ public class ChatService {
             throw new CustomException(ErrorCode.NO_CHAT_ROOM_OR_PERMISSION_DENIED);
         }
 
-        List<ChatMessage> chatMessages = chatRepository.findByRoomIdOrderBySendDateDesc(roomId);
+        List<ChatMessage> chatMessages = chatRepository.findByRoomIdOrderBySendDateAsc(roomId);
 
         return chatMessages.stream()
                 .map( (chatMessage) -> new ChatMessageResponseDto(
