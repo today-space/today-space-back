@@ -46,6 +46,7 @@ public enum ErrorCode {
 
     // Chats
     NO_CHAT_MYSELF(400, "자신과는 채팅할 수 없습니다."),
+    NO_CHAT_ROOM_OR_PERMISSION_DENIED(400, "채팅방이 없거나 권한이 없습니다."),
 
     // JWT
     TOKEN_EXPIRED(401, "토큰이 만료되었습니다."),

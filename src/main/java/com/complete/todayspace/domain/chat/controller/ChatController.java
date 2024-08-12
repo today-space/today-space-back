@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.chat.controller;
 
 import com.complete.todayspace.domain.chat.dto.ChatMessageRequestDto;
+import com.complete.todayspace.domain.chat.dto.ChatMessageResponseDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomRequestDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomResponseDto;
 import com.complete.todayspace.domain.chat.service.ChatService;
@@ -62,6 +63,25 @@ public class ChatController {
         chatService.sendMessage(requestDto);
 
         roomMessageTemplate(roomId, requestDto.getMessage());
+    }
+
+    @GetMapping("/chatroom/{roomId}/message")
+    public ResponseEntity<DataResponseDto<List<ChatMessageResponseDto>>> getMessageForChatRoom(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable String roomId
+    ) {
+
+        List<ChatMessageResponseDto> responseDto = chatService.getMessageForChatRoom(
+                userDetails.getUser().getId(),
+                roomId
+        );
+
+        DataResponseDto<List<ChatMessageResponseDto>> dataResponseDto = new DataResponseDto<>(
+                SuccessCode.GET_MESSAGE_FOR_CHAT_ROOM,
+                responseDto
+        );
+
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
     private void roomMessageTemplate(String roomId, String message) {
