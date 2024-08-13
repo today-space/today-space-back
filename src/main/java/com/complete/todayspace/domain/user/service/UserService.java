@@ -133,7 +133,7 @@ public class UserService {
 
         if (profileImage != null && !profileImage.isEmpty()) {
 
-            if (user.getProfileImage() != null) {
+            if (!user.getProfileImage().equals("profile/defaultProfileImg.png")) {
                 s3Provider.deleteFile(user.getProfileImage());
             }
 
