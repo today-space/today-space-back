@@ -114,35 +114,26 @@ public class UserService {
     }
 
     @Transactional
-    public void modifyProfile(Long id, ModifyProfileRequestDto requestDto, MultipartFile profileImage) {
+    public void modifyProfile(Long id, ModifyProfileRequestDto requestDto, String profileImageUrl) {
 
         User user = findById(id);
 
-        if (requestDto == null && profileImage == null) {
+        if (requestDto == null && profileImageUrl == null) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         if (requestDto != null) {
-
             validPassword(requestDto, user);
-
             String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
             user.modifyPassword(encryptedPassword);
-
         }
 
-        if (profileImage != null && !profileImage.isEmpty()) {
-
+        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
             if (!user.getProfileImage().equals("https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png")) {
                 s3Provider.deleteFile(user.getProfileImage());
             }
-
-            List<MultipartFile> files = List.of(profileImage);
-            List<String> fileUrls = s3Provider.uploadFile("profile", files);
-            user.modifyProfileImage(fileUrls.get(0));
-
+            user.modifyProfileImage(profileImageUrl);
         }
-
     }
 
     @Transactional

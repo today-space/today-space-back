@@ -90,10 +90,10 @@ public class UserController {
     public ResponseEntity<StatusResponseDto> modifyProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestPart(value = "data", required = false) ModifyProfileRequestDto requestDto,
-            @RequestPart(value = "files", required = false) MultipartFile profileImage
+            @RequestPart(value = "profileImageUrl", required = false) String profileImageUrl
     ) {
 
-        userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImage);
+        userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImageUrl);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PROFILE_UPDATE);
 
