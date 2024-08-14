@@ -32,19 +32,15 @@ public class ProductService {
     private final S3Provider s3Provider;
     private final WishRepository wishRepository;
 
-
     @Transactional
-    public void createProduct(User user, CreateProductRequestDto requestDto,
-        List<MultipartFile> productImage) {
-
-        List<String> fileUrls = s3Provider.uploadFile("product", productImage);
+    public void createProduct(User user, CreateProductRequestDto requestDto) {
 
         Product saveProduct = new Product(requestDto.getTitle(), requestDto.getPrice(),
-            requestDto.getContent(), requestDto.getAddress(), requestDto.getState(), user);
+                requestDto.getContent(), requestDto.getAddress(), requestDto.getState(), user);
 
         productRepository.save(saveProduct);
 
-        for (String fileUrl : fileUrls) {
+        for (String fileUrl : requestDto.getImages()) {
             ImageProduct imageProduct = new ImageProduct(fileUrl, saveProduct);
             imageProductRepository.save(imageProduct);
         }
