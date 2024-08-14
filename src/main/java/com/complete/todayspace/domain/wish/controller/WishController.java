@@ -25,24 +25,27 @@ public class WishController {
     private final WishService wishService;
 
     @PostMapping("/products/{productsId}/wish")
-    public ResponseEntity<StatusResponseDto> toggleWish(
+    public ResponseEntity<StatusResponseDto> createWish(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
-        @PathVariable @Min(1) Long productsId
+        @PathVariable Long productsId
     ) {
-        boolean isWish = wishService.toggleWish(userDetails.getUser(), productsId);
 
-        StatusResponseDto response;
-        HttpStatus status;
+        wishService.createWish(userDetails.getUser(), productsId);
 
-        if (isWish) {
-            response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS);
-            status = HttpStatus.CREATED;
-        } else {
-            response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
-            status = HttpStatus.OK;
-        }
+        StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 
-        return new ResponseEntity<>(response, status);
+    @DeleteMapping("/products/{productsId}/wish")
+    public ResponseEntity<StatusResponseDto> deleteWish(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long productsId
+    ) {
+
+        wishService.deleteWish(userDetails.getUser(), productsId);
+
+        StatusResponseDto response = new StatusResponseDto(SuccessCode.PRODUCTS_WISHS_DELETE);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/my/wishs")
@@ -56,7 +59,6 @@ public class WishController {
         Page<ProductResponseDto> responseDto = wishService.getMyWishList(userDetails.getUser().getId(), page - 1);
 
         DataResponseDto<Page<ProductResponseDto>> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_WISHS_GET, responseDto);
-
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 

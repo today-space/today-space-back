@@ -15,7 +15,6 @@ import com.complete.todayspace.domain.wish.entity.Wish;
 import com.complete.todayspace.domain.wish.repository.WishRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -35,23 +34,37 @@ public class WishService {
     private final S3Provider s3Provider;
     private final PaymentRepository paymentRepository;
 
-    public boolean toggleWish(User user, Long productsId) {
+    public void createWish(User user, Long productsId) {
 
         Product product = productService.findByProduct(productsId);
+        findWish(user.getId(), productsId);
 
-        Optional<Wish> existingWish = wishRepository.findByUserIdAndProductId(user.getId(),
-            productsId);
+        Wish saveWish = new Wish(user, product);
+        wishRepository.save(saveWish);
+    }
 
-        if (existingWish.isPresent()) {
+    public void deleteWish(User user, Long productsId) {
 
-            wishRepository.delete(existingWish.get());
-            return false;
-        } else {
+        productService.findByProduct(productsId);
+        Wish wish = findWish(user.getId(), productsId);
 
-            Wish wish = new Wish(user, product);
-            wishRepository.save(wish);
-            return true;
+        checkIfUserCanDeleteWish(user, wish);
+
+        wishRepository.delete(wish);
+    }
+
+    private void checkIfUserCanDeleteWish(User user, Wish wish) {
+
+        if (!user.getId().equals(wish.getUser().getId())) {
+            throw new CustomException(ErrorCode.CANNOT_DELETE_WISH);
         }
+    }
+
+    private Wish findWish(Long userId, Long productsId) throws CustomException {
+
+        return wishRepository.findByUserIdAndProductId(userId, productsId).orElseThrow(
+            () -> new CustomException(ErrorCode.NOT_EXIST_WISH)
+        );
     }
 
 

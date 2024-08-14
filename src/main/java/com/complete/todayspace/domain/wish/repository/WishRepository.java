@@ -13,7 +13,6 @@ public interface WishRepository extends JpaRepository<Wish, Long>,
     QuerydslPredicateExecutor<ProductImageResponseDto>, WishRepositoryQuery {
 
     Optional<Wish> findByUserIdAndProductId(Long userId, Long productsId);
-
     Page<Wish> findByUserId(Long userId, Pageable pageable);
 
 }
