@@ -20,10 +20,12 @@ public class ProductDetailResponseDto {
     private final State state;
     private final LocalDateTime upDateAt;
     private final List<ImageProductDto> imageUrlList;
+    private final boolean paymentState;
+    private final String paymentUser;
 
     public ProductDetailResponseDto(Long id, Long userId, String userName, String userImagePath, Long price, String title,
         String content, Address address,
-        State state, LocalDateTime upDateAt, List<ImageProductDto> imageUrlList) {
+        State state, LocalDateTime upDateAt, List<ImageProductDto> imageUrlList, boolean paymentState, String paymentUser) {
         this.id = id;
         this.userId = userId;
         this.userName = userName;
@@ -35,5 +37,7 @@ public class ProductDetailResponseDto {
         this.state = state;
         this.upDateAt = upDateAt;
         this.imageUrlList = imageUrlList;
+        this.paymentState = paymentState;
+        this.paymentUser = paymentUser;
     }
 }
