@@ -1,6 +1,9 @@
 package com.complete.todayspace.domain.product.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.payment.entity.Payment;
+import com.complete.todayspace.domain.payment.entity.State;
+import com.complete.todayspace.domain.payment.repository.PaymentRepository;
 import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
@@ -31,6 +34,7 @@ public class ProductService {
     private final ImageProductRepository imageProductRepository;
     private final S3Provider s3Provider;
     private final WishRepository wishRepository;
+    private final PaymentRepository paymentRepository;
 
 
     @Transactional
@@ -109,9 +113,18 @@ public class ProductService {
             ))
             .toList();
 
+        Payment payment = paymentRepository.findByProductId(product.getId());
+        boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
+        // 한 곳에서만 사용가능
+
+        String paymentUser = null;
+        if (payment != null && payment.getUser().getUsername() != null) {
+            paymentUser = payment.getUser().getUsername();
+        }
+
         return new ProductDetailResponseDto(product.getId(), product.getUser().getId(), product.getUser().getUsername(), product.getUser().getProfileImage(),
             product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
-            product.getState(), product.getUpdatedAt(), imageUrlList);
+            product.getState(), product.getUpdatedAt(), imageUrlList, paymentState, paymentUser);
     }
 
     @Transactional(readOnly = true)
@@ -203,8 +216,11 @@ public class ProductService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
+            Payment payment = paymentRepository.findByProductId(product.getId());
+            boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
+
             return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(),
-                s3Provider.getS3Url(firstImage.getFilePath()));
+                s3Provider.getS3Url(firstImage.getFilePath()), paymentState);
         });
     }
 
@@ -240,8 +256,11 @@ public class ProductService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
+            Payment payment = paymentRepository.findByProductId(product.getId());
+            boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
+
             return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(),
-                s3Provider.getS3Url(firstImage.getFilePath()));
+                s3Provider.getS3Url(firstImage.getFilePath()), paymentState);
         });
     }
 

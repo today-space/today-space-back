@@ -1,6 +1,9 @@
 package com.complete.todayspace.domain.wish.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.payment.entity.Payment;
+import com.complete.todayspace.domain.payment.entity.State;
+import com.complete.todayspace.domain.payment.repository.PaymentRepository;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
@@ -30,6 +33,7 @@ public class WishService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Provider s3Provider;
+    private final PaymentRepository paymentRepository;
 
     public boolean toggleWish(User user, Long productsId) {
 
@@ -78,11 +82,15 @@ public class WishService {
                     throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
                 }
 
+                Payment payment = paymentRepository.findByProductId(product.getId());
+                boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
+
                 return new ProductResponseDto(
                         product.getId(),
                         product.getPrice(),
                         product.getTitle(),
-                        s3Provider.getS3Url(firstImage.getFilePath())
+                        s3Provider.getS3Url(firstImage.getFilePath()),
+                        paymentState
                 );
             }).collect(Collectors.toList());
 
