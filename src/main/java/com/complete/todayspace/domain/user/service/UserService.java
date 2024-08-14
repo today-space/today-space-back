@@ -40,7 +40,7 @@ public class UserService {
         validUsernameUnique(requestDto.getUsername());
 
         String encryptedPassword = passwordEncoder.encode(requestDto.getPassword());
-        User user = new User(requestDto.getUsername(), encryptedPassword, requestDto.getProfileImage(), UserRole.USER, UserState.ACTIVE);
+        User user = new User(requestDto.getUsername(), encryptedPassword, "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png", UserRole.USER, UserState.ACTIVE);
         userRepository.save(user);
 
     }
@@ -133,7 +133,7 @@ public class UserService {
 
         if (profileImage != null && !profileImage.isEmpty()) {
 
-            if (user.getProfileImage() != null) {
+            if (!user.getProfileImage().equals("https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png")) {
                 s3Provider.deleteFile(user.getProfileImage());
             }
 

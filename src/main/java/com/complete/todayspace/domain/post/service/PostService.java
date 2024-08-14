@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -42,20 +40,19 @@ public class PostService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public void createPost(User user, CreatePostRequestDto requestDto, List<MultipartFile> postImage) {
-
-        List<String> fileUrls = s3Provider.uploadFile("post", postImage);
-
+    public void createPost(User user, CreatePostRequestDto requestDto) {
         Post savePost = new Post(requestDto.getContent(), user);
         postRepository.save(savePost);
 
-        for (String fileUrl : fileUrls) {
-            ImagePost imagePost = new ImagePost(fileUrl, savePost);
-            imagePostRepository.save(imagePost);
+        List<String> imageUrls = requestDto.getImages();
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            for (String imageUrl : imageUrls) {
+                ImagePost imagePost = new ImagePost(imageUrl, savePost);
+                imagePostRepository.save(imagePost);
+            }
         }
 
         List<String> hashtags = requestDto.getHashtags();
-
         if (hashtags != null && !hashtags.isEmpty()) {
             for (String tagName : hashtags) {
                 HashtagList hashtagList = hashtagListRepository.findByHashtagName(tagName);
@@ -116,21 +113,26 @@ public class PostService {
                 () -> new CustomException(ErrorCode.POST_NOT_FOUND));
         post.updatePost(requestDto.getContent());
 
-        List<Long> deleteImageIds = requestDto.getDeleteImageIds();
-        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-            for (Long imageId : deleteImageIds) {
-                ImagePost imagePost = imagePostRepository.findById(imageId)
+        List<ImagePost> existingImages = imagePostRepository.findByPostId(postId);
+
+        // 기존 이미지 삭제
+        List<String> deleteImageUrls = requestDto.getDeleteImageUrls();
+        if (deleteImageUrls != null && !deleteImageUrls.isEmpty()) {
+            for (String deleteImageUrl : deleteImageUrls) {
+                ImagePost imagePost = existingImages.stream()
+                        .filter(image -> image.getFilePath().equals(deleteImageUrl))
+                        .findFirst()
                         .orElseThrow(() -> new CustomException(ErrorCode.FILE_UPLOAD_ERROR));
-                s3Provider.deleteFile(imagePost.getFilePath());
                 imagePostRepository.delete(imagePost);
+                s3Provider.deleteFile(deleteImageUrl);
             }
         }
 
-        List<MultipartFile> newImages = requestDto.getNewImages();
+        // 새 이미지 추가
+        List<String> newImages = requestDto.getNewImages();
         if (newImages != null && !newImages.isEmpty()) {
-            List<String> fileUrls = s3Provider.uploadFile("post", newImages);
-            for (String fileUrl : fileUrls) {
-                ImagePost imagePost = new ImagePost(fileUrl, post);
+            for (String imageUrl : newImages) {
+                ImagePost imagePost = new ImagePost(imageUrl, post);
                 imagePostRepository.save(imagePost);
             }
         }

@@ -10,18 +10,17 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 @Setter
 public class EditPostRequestDto {
-
     @NotBlank
     @Length(max = 600)
     private String content;
-    private List<Long> deleteImageIds;
-    private List<MultipartFile> newImages;
+    private List<String> deleteImageUrls;
+    private List<String> newImages;
     private List<String> hashtags;
     private List<String> deleteHashtags;
 
-    public EditPostRequestDto(String content, List<Long> deleteImageIds, List<MultipartFile> newImages, List<String> hashtags, List<String> deleteHashtags) {
+    public EditPostRequestDto(String content, List<String> deleteImageUrls, List<String> newImages, List<String> hashtags, List<String> deleteHashtags) {
         this.content = content;
-        this.deleteImageIds = deleteImageIds;
+        this.deleteImageUrls = deleteImageUrls;
         this.newImages = newImages;
         this.hashtags = hashtags;
         this.deleteHashtags = deleteHashtags;

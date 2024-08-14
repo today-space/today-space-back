@@ -62,7 +62,7 @@ public class ChatController {
 
         chatService.sendMessage(requestDto);
 
-        roomMessageTemplate(roomId, requestDto.getMessage());
+        roomMessageTemplate(roomId, requestDto);
     }
 
     @GetMapping("/chatroom/{roomId}/message")
@@ -84,8 +84,8 @@ public class ChatController {
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
-    private void roomMessageTemplate(String roomId, String message) {
-        simpMessagingTemplate.convertAndSend("/v1/sub/chatroom/" + roomId, message);
+    private void roomMessageTemplate(String roomId, ChatMessageRequestDto requestDto) {
+        simpMessagingTemplate.convertAndSend("/v1/sub/chatroom/" + roomId, requestDto);
     }
 
 }
