@@ -27,6 +27,7 @@ public class CreateProductRequestDto {
 
     private State state;
 
-    private List<MultipartFile> files;
+    private List<String> images; // 이미지 URL 리스트로 수정
 }
+
 
