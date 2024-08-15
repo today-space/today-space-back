@@ -150,4 +150,8 @@ public class PaymentService {
 
         return httpHeaders;
     }
+
+    public Payment findByProductId(Long id) {
+        return paymentRepository.findByProductId(id);
+    }
 }

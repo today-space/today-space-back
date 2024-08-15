@@ -4,6 +4,7 @@ import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.payment.entity.Payment;
 import com.complete.todayspace.domain.payment.entity.State;
 import com.complete.todayspace.domain.payment.repository.PaymentRepository;
+import com.complete.todayspace.domain.payment.service.PaymentService;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
@@ -32,12 +33,18 @@ public class WishService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Provider s3Provider;
-    private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
 
     public void createWish(User user, Long productsId) {
 
         Product product = productService.findByProduct(productsId);
-        findWish(user.getId(), productsId);
+        Payment payment = paymentService.findByProductId(product.getId());
+
+        boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
+
+        if (paymentState) {
+            throw new CustomException(ErrorCode.NOT_EXIST_WISH);
+        }
 
         Wish saveWish = new Wish(user, product);
         wishRepository.save(saveWish);
@@ -59,6 +66,7 @@ public class WishService {
             throw new CustomException(ErrorCode.CANNOT_DELETE_WISH);
         }
     }
+
 
     private Wish findWish(Long userId, Long productsId) throws CustomException {
 
@@ -95,7 +103,7 @@ public class WishService {
                     throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
                 }
 
-                Payment payment = paymentRepository.findByProductId(product.getId());
+                Payment payment = paymentService.findByProductId(product.getId());
                 boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
 
                 return new ProductResponseDto(
