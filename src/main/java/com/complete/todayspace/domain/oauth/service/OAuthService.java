@@ -1,6 +1,7 @@
 package com.complete.todayspace.domain.oauth.service;
 
 import com.complete.todayspace.domain.oauth.dto.OAuthDto;
+import com.complete.todayspace.domain.oauth.dto.OAuthResponseDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
@@ -54,135 +55,137 @@ public class OAuthService {
     @Value("${front.url}")
     private String frontURL;
 
+    private static final String BEARER = "Bearer ";
+
     @Transactional
-    public HttpHeaders kakao(String code) throws JsonProcessingException {
+    public User kakao(String code) throws JsonProcessingException {
 
         String token = getKakaoToken(code, KAKAO_CLIENT_ID);
+
         OAuthDto oAuthDto = getKakaoUserInfo(token);
-        User kakaoUser = registerOAuthUserIfNeeded(oAuthDto);
 
-        String accessToken = jwtProvider.generateAccessToken(kakaoUser.getUsername(), kakaoUser.getRole().toString());
-        String refreshToken = jwtProvider.generateRefreshToken(kakaoUser.getUsername(), kakaoUser.getRole().toString());
-        ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
+        User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        headers.add(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        userRepository.save(user);
 
-        kakaoUser.updateRefreshToken(refreshToken);
-        userRepository.save(kakaoUser);
-
-        return headers;
+        return user;
     }
 
     @Transactional
-    public HttpHeaders naver(String code) throws JsonProcessingException {
+    public User naver(String code) throws JsonProcessingException {
 
         String token = getNaverToken(code, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET);
+
         OAuthDto oAuthDto = getNaverUserInfo(token);
-        User naverUser = registerOAuthUserIfNeeded(oAuthDto);
 
-        String accessToken = jwtProvider.generateAccessToken(naverUser.getUsername(), naverUser.getRole().toString());
-        String refreshToken = jwtProvider.generateRefreshToken(naverUser.getUsername(), naverUser.getRole().toString());
-        ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
+        User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        headers.add(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        userRepository.save(user);
 
-        naverUser.updateRefreshToken(refreshToken);
-        userRepository.save(naverUser);
-
-        return headers;
+        return user;
     }
 
     @Transactional
-    public HttpHeaders google(String code) throws JsonProcessingException {
+    public User google(String code) throws JsonProcessingException {
 
         String token = getGoogleToken(code, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
-        OAuthDto oAuthDto = getGoogleUserInfo(token);
-        User googleUser = registerOAuthUserIfNeeded(oAuthDto);
 
-        String accessToken = jwtProvider.generateAccessToken(googleUser.getUsername(), googleUser.getRole().toString());
-        String refreshToken = jwtProvider.generateRefreshToken(googleUser.getUsername(), googleUser.getRole().toString());
+        OAuthDto oAuthDto = getGoogleUserInfo(token);
+
+        User user = registerOAuthUserIfNeeded(oAuthDto);
+
+        userRepository.save(user);
+
+        return user;
+    }
+
+    public OAuthResponseDto responseDto(User user) {
+
+        String username = user.getUsername();
+        String accessToken = BEARER + jwtProvider.generateAccessToken(user.getUsername(), user.getRole().toString());
+
+        return new OAuthResponseDto(username, accessToken);
+    }
+
+    @Transactional
+    public HttpHeaders setCookie(User user) {
+
+        String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole().toString());
         ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
         headers.add(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
-        googleUser.updateRefreshToken(refreshToken);
-        userRepository.save(googleUser);
+        user.updateRefreshToken(refreshToken);
 
         return headers;
     }
 
-    private String getKakaoToken(String code, String CLIENT_ID) throws JsonProcessingException {
+    private String getKakaoToken(
+            String code,
+            String CLIENT_ID
+    ) throws JsonProcessingException {
 
-        URI uri = UriComponentsBuilder.fromUriString("https://kauth.kakao.com")
-                .path("/oauth/token")
-                .encode()
+        String tokenUrl = "https://kauth.kakao.com/oauth/token";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", CLIENT_ID);
+        params.add("redirect_uri", frontURL + "/oauth/kakao");
+        params.add("code", code);
+
+        return getToken(tokenUrl, params);
+    }
+
+    private String getNaverToken(
+            String code,
+            String NAVER_CLIENT_ID,
+            String NAVER_CLIENT_SECRET
+    ) throws JsonProcessingException {
+
+        String tokenUrl = "https://nid.naver.com/oauth2.0/token";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", NAVER_CLIENT_ID);
+        params.add("client_secret", NAVER_CLIENT_SECRET);
+        params.add("redirect_uri", frontURL + "/oauth/naver");
+        params.add("code", code);
+
+        return getToken(tokenUrl, params);
+    }
+
+    private String getGoogleToken(
+            String code,
+            String GOOGLE_CLIENT_ID,
+            String GOOGLE_CLIENT_SECRET
+    ) throws JsonProcessingException {
+
+        String tokenUrl = "https://oauth2.googleapis.com/token";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", GOOGLE_CLIENT_ID);
+        params.add("client_secret", GOOGLE_CLIENT_SECRET);
+        params.add("redirect_uri", frontURL + "/oauth/google");
+        params.add("code", code);
+
+        return getToken(tokenUrl, params);
+    }
+
+    private String getToken(String tokenUrl, MultiValueMap<String, String> params) throws JsonProcessingException {
+
+        URI uri = UriComponentsBuilder.fromUriString(tokenUrl)
                 .build()
                 .toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("client_id", CLIENT_ID);
-        body.add("redirect_uri", frontURL + "/oauth/kakao");
-        body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity.post(uri)
                 .headers(headers)
-                .body(body);
-        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
+                .body(params);
 
-        return jsonNode.get("access_token").asText();
-    }
-
-    private String getNaverToken(String code, String NAVER_CLIENT_ID, String NAVER_CLIENT_SECRET) throws JsonProcessingException {
-
-        URI uri = UriComponentsBuilder.fromUriString("https://nid.naver.com/oauth2.0/token")
-                .queryParam("grant_type", "authorization_code")
-                .queryParam("client_id", NAVER_CLIENT_ID)
-                .queryParam("client_secret", NAVER_CLIENT_SECRET)
-                .queryParam("redirect_uri", frontURL + "/oauth/naver")
-                .queryParam("code", code)
-                .build()
-                .toUri();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        RequestEntity<Void> requestEntity = RequestEntity.post(uri)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-
-        return jsonNode.get("access_token").asText();
-    }
-
-    private String getGoogleToken(String code, String GOOGLE_CLIENT_ID, String GOOGLE_CLIENT_SECRET) throws JsonProcessingException {
-
-        URI uri = UriComponentsBuilder.fromUriString("https://oauth2.googleapis.com/token")
-                .queryParam("grant_type", "authorization_code")
-                .queryParam("client_id", GOOGLE_CLIENT_ID)
-                .queryParam("client_secret", GOOGLE_CLIENT_SECRET)
-                .queryParam("redirect_uri", frontURL + "/oauth/google")
-                .queryParam("code", code)
-                .build()
-                .toUri();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded");
-
-        RequestEntity<Void> requestEntity = RequestEntity.post(uri)
-                .headers(headers)
-                .build();
         ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
         JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
 
@@ -191,22 +194,10 @@ public class OAuthService {
 
     private OAuthDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
 
-        URI uri = UriComponentsBuilder.fromUriString("https://kapi.kakao.com")
-                .path("/v2/user/me")
-                .encode()
-                .build()
-                .toUri();
+        String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessToken);
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        JsonNode jsonNode = getUserInfo(userInfoUrl, accessToken);
 
-        RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity.post(uri)
-                .headers(headers)
-                .body(new LinkedMultiValueMap<>());
-        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-
-        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         String id = Long.toString(jsonNode.get("id").asLong());
         String nickname = jsonNode.get("properties").get("nickname").asText();
 
@@ -215,19 +206,10 @@ public class OAuthService {
 
     private OAuthDto getNaverUserInfo(String accessToken) throws JsonProcessingException {
 
-        URI uri = UriComponentsBuilder.fromUriString("https://openapi.naver.com/v1/nid/me")
-                .build()
-                .toUri();
+        String userInfoUrl = "https://openapi.naver.com/v1/nid/me";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessToken);
+        JsonNode jsonNode = getUserInfo(userInfoUrl, accessToken);
 
-        RequestEntity<Void> requestEntity = RequestEntity.get(uri)
-                .headers(headers)
-                .build();
-        ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
-
-        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
         String id = jsonNode.get("response").get("id").asText();
         String nickname = jsonNode.get("response").get("name").asText();
 
@@ -236,23 +218,33 @@ public class OAuthService {
 
     private OAuthDto getGoogleUserInfo(String accessToken) throws JsonProcessingException {
 
-        URI uri = UriComponentsBuilder.fromUriString("https://www.googleapis.com/oauth2/v2/userinfo")
+        String userInfoUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+
+        JsonNode jsonNode = getUserInfo(userInfoUrl, accessToken);
+
+        String id = jsonNode.get("id").asText();
+        String nickname = jsonNode.get("name").asText();
+
+        return new OAuthDto(id, nickname);
+    }
+
+    private JsonNode getUserInfo(String userInfoUrl, String accessToken) throws JsonProcessingException {
+
+        URI uri = UriComponentsBuilder.fromUriString(userInfoUrl)
                 .build()
                 .toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         RequestEntity<Void> requestEntity = RequestEntity.get(uri)
                 .headers(headers)
                 .build();
+
         ResponseEntity<String> response = restTemplate.exchange(requestEntity, String.class);
 
-        JsonNode jsonNode = new ObjectMapper().readTree(response.getBody());
-        String id = jsonNode.get("id").asText();
-        String name = jsonNode.get("name").asText();
-
-        return new OAuthDto(id, name);
+        return new ObjectMapper().readTree(response.getBody());
     }
 
     private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
@@ -265,7 +257,14 @@ public class OAuthService {
             String username = generateRandomUsername();
             String password = UUID.randomUUID().toString();
             String encryptedPassword = passwordEncoder.encode(password);
-            oAuthUser = new User(username, encryptedPassword, "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png", UserRole.USER, UserState.ACTIVE, oAuthId);
+            oAuthUser = new User(
+                    username,
+                    encryptedPassword,
+                    "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png",
+                    UserRole.USER,
+                    UserState.ACTIVE,
+                    oAuthId
+            );
 
         }
 
