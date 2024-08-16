@@ -4,6 +4,7 @@ import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.payment.entity.Payment;
 import com.complete.todayspace.domain.payment.entity.State;
 import com.complete.todayspace.domain.payment.repository.PaymentRepository;
+import com.complete.todayspace.domain.payment.service.PaymentService;
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
 import com.complete.todayspace.domain.product.entity.Product;
@@ -15,7 +16,6 @@ import com.complete.todayspace.domain.wish.entity.Wish;
 import com.complete.todayspace.domain.wish.repository.WishRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -33,25 +33,46 @@ public class WishService {
     private final ProductRepository productRepository;
     private final ImageProductRepository imageProductRepository;
     private final S3Provider s3Provider;
-    private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
 
-    public boolean toggleWish(User user, Long productsId) {
+    public void createWish(User user, Long productsId) {
 
         Product product = productService.findByProduct(productsId);
+        Payment payment = paymentService.findByProductId(product.getId());
 
-        Optional<Wish> existingWish = wishRepository.findByUserIdAndProductId(user.getId(),
-            productsId);
+        boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
 
-        if (existingWish.isPresent()) {
-
-            wishRepository.delete(existingWish.get());
-            return false;
-        } else {
-
-            Wish wish = new Wish(user, product);
-            wishRepository.save(wish);
-            return true;
+        if (paymentState) {
+            throw new CustomException(ErrorCode.NOT_EXIST_WISH);
         }
+
+        Wish saveWish = new Wish(user, product);
+        wishRepository.save(saveWish);
+    }
+
+    public void deleteWish(User user, Long productsId) {
+
+        productService.findByProduct(productsId);
+        Wish wish = findWish(user.getId(), productsId);
+
+        checkIfUserCanDeleteWish(user, wish);
+
+        wishRepository.delete(wish);
+    }
+
+    private void checkIfUserCanDeleteWish(User user, Wish wish) {
+
+        if (!user.getId().equals(wish.getUser().getId())) {
+            throw new CustomException(ErrorCode.CANNOT_DELETE_WISH);
+        }
+    }
+
+
+    private Wish findWish(Long userId, Long productsId) throws CustomException {
+
+        return wishRepository.findByUserIdAndProductId(userId, productsId).orElseThrow(
+            () -> new CustomException(ErrorCode.NOT_EXIST_WISH)
+        );
     }
 
 
@@ -82,7 +103,7 @@ public class WishService {
                     throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
                 }
 
-                Payment payment = paymentRepository.findByProductId(product.getId());
+                Payment payment = paymentService.findByProductId(product.getId());
                 boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
 
                 return new ProductResponseDto(
