@@ -68,14 +68,18 @@ public class SecurityConfig {
         });
 
         http.csrf(AbstractHttpConfigurer::disable);
-        http.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+        http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/check").permitAll()
+                        .requestMatchers("/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/check",
+                                "/v1/kakao/login", "/v1/naver/login", "/v1/google/login").permitAll()
                         .requestMatchers(HttpMethod.GET,
-                                "/v1/posts", "/v1/posts/*", "/v1/posts/**", "/v1/hashtags",
-                                "/v1/products", "/v1/products**", "/v1/products/*", "/v1/users/*", "/v1/users/*/reviews",
-                                "/v1/kakao/callback", "/v1/naver/callback", "/v1/google/callback", "/v1/payment/success/kakao").permitAll()
+                                "/v1/posts", "/v1/posts/*", "/v1/posts/**",
+                                "/v1/hashtags",
+                                "/v1/products", "/v1/products**", "/v1/products/*",
+                                "/v1/users/*", "/v1/users/*/reviews",
+                                "/v1/payment/success/kakao").permitAll()
                         .requestMatchers("/v1/ws/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptionHandling -> {
