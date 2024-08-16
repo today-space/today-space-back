@@ -127,6 +127,16 @@ public class JwtProvider {
                 .getBody();
     }
 
+    public Date getExpirationDate(String token) {
+        Claims claims = getClaimsFromToken(token);
+
+        return claims.getExpiration();
+    }
+
+    public Long getExpirationLong(String token) {
+        return (getExpirationDate(token).getTime() - System.currentTimeMillis()) / 1000;
+    }
+
     private Date createExpirationDate(Long ms) {
         Date date = new Date();
 

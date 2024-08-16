@@ -2,9 +2,11 @@ package com.complete.todayspace.domain.user.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.user.dto.*;
+import com.complete.todayspace.domain.user.entity.RefreshToken;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
+import com.complete.todayspace.domain.user.repository.RefreshTokenRepository;
 import com.complete.todayspace.domain.user.repository.UserRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -21,16 +23,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final S3Provider s3Provider;
@@ -40,7 +41,13 @@ public class UserService {
         validUsernameUnique(requestDto.getUsername());
 
         String encryptedPassword = passwordEncoder.encode(requestDto.getPassword());
-        User user = new User(requestDto.getUsername(), encryptedPassword, "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png", UserRole.USER, UserState.ACTIVE);
+        User user = new User(
+                requestDto.getUsername(),
+                encryptedPassword,
+                "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png",
+                UserRole.USER,
+                UserState.ACTIVE
+        );
         userRepository.save(user);
 
     }
@@ -108,7 +115,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ProfileResponseDto getUserInfoByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
     }
@@ -137,7 +145,12 @@ public class UserService {
     }
 
     @Transactional
-    public void modifyUsername(Long id, ModifyUsernameRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
+    public void modifyUsername(
+            Long id,
+            ModifyUsernameRequestDto requestDto,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
 
         validUsernameUnique(requestDto.getUsername());
 
@@ -181,8 +194,25 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public void saveUser(User user) {
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void saveRefreshToken(Long userId, String refreshToken, Long expiration) {
+
+        RefreshToken token = new RefreshToken(userId, refreshToken, expiration);
+        refreshTokenRepository.save(token);
+
+    }
+
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User findByoAuthId(String oAuthId) {
+        return userRepository.findByoAuthId(oAuthId).orElse(null);
     }
 
     private void validPassword(ModifyProfileRequestDto requestDto, User user) {

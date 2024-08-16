@@ -5,7 +5,7 @@ import com.complete.todayspace.domain.oauth.dto.OAuthResponseDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
-import com.complete.todayspace.domain.user.repository.UserRepository;
+import com.complete.todayspace.domain.user.service.UserService;
 import com.complete.todayspace.global.jwt.JwtProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,8 +32,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuthService {
 
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final UserRepository userRepository;
     private final RestTemplate restTemplate;
     private final JwtProvider jwtProvider;
 
@@ -66,7 +66,7 @@ public class OAuthService {
 
         User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        userRepository.save(user);
+        userService.saveUser(user);
 
         return user;
     }
@@ -80,7 +80,7 @@ public class OAuthService {
 
         User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        userRepository.save(user);
+        userService.saveUser(user);
 
         return user;
     }
@@ -94,7 +94,7 @@ public class OAuthService {
 
         User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        userRepository.save(user);
+        userService.saveUser(user);
 
         return user;
     }
@@ -111,12 +111,13 @@ public class OAuthService {
     public HttpHeaders setCookie(User user) {
 
         String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole().toString());
+        Long expiration = jwtProvider.getExpirationLong(refreshToken);
         ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
-        user.updateRefreshToken(refreshToken);
+        userService.saveRefreshToken(user.getId(), refreshToken, expiration);
 
         return headers;
     }
@@ -250,7 +251,7 @@ public class OAuthService {
     private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
 
         String oAuthId = oAuthDto.getNickname() + oAuthDto.getId();
-        User oAuthUser = userRepository.findByoAuthId(oAuthId).orElse(null);
+        User oAuthUser = userService.findByoAuthId(oAuthId);
 
         if (oAuthUser == null) {
 
