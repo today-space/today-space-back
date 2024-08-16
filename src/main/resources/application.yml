@@ -14,6 +14,8 @@ spring:
   data:
     mongodb:
       uri: ${MONGO_DB_URI}
+    redis:
+      url: ${REDIS_DB_URL}
 
   jpa:
     hibernate:
