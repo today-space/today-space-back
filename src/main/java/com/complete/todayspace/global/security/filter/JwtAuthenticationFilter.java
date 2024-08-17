@@ -105,8 +105,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             return;
         }
 
-        String accessToken = jwtProvider.generateAccessToken(username, userRole);
-        String refreshToken = jwtProvider.generateRefreshToken(username, userRole);
+        String accessToken = jwtProvider.generateAccessToken(username, userRole, user.getId());
+        String refreshToken = jwtProvider.generateRefreshToken(username, userRole, user.getId());
         Long expiration = jwtProvider.getExpirationLong(refreshToken);
 
         refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken, expiration));

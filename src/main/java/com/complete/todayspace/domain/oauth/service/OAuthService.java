@@ -102,7 +102,7 @@ public class OAuthService {
     public OAuthResponseDto responseDto(User user) {
 
         String username = user.getUsername();
-        String accessToken = BEARER + jwtProvider.generateAccessToken(user.getUsername(), user.getRole().toString());
+        String accessToken = BEARER + jwtProvider.generateAccessToken(user.getUsername(), user.getRole().toString(), user.getId());
 
         return new OAuthResponseDto(username, accessToken);
     }
@@ -110,7 +110,7 @@ public class OAuthService {
     @Transactional
     public HttpHeaders setCookie(User user) {
 
-        String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole().toString());
+        String refreshToken = jwtProvider.generateRefreshToken(user.getUsername(), user.getRole().toString(), user.getId());
         Long expiration = jwtProvider.getExpirationLong(refreshToken);
         ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
 

@@ -25,9 +25,6 @@ public class User extends AllTimestamp {
     private String profileImage;
 
     @Column
-    private String refreshToken;
-
-    @Column
     private String oAuthId;
 
     @Column
@@ -53,10 +50,6 @@ public class User extends AllTimestamp {
         this.role = role;
         this.state = state;
         this.oAuthId = oAuthId;
-    }
-
-    public void updateRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 
     public void withdrawal() {

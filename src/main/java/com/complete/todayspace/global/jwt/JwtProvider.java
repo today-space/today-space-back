@@ -39,26 +39,27 @@ public class JwtProvider {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String generateToken(String username, String role, Date expirationDate) {
+    public String generateToken(String username, String role, Long id, Date expirationDate) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("auth", role)
+                .claim("id", id)
                 .setExpiration(expirationDate)
                 .setIssuedAt(new Date())
                 .signWith(key, signatureAlgorithm)
                 .compact();
     }
 
-    public String generateAccessToken(String username, String role) {
+    public String generateAccessToken(String username, String role, Long id) {
         Date expirationDate = createExpirationDate(accessTokenExpiration);
 
-        return generateToken(username, role, expirationDate);
+        return generateToken(username, role, id, expirationDate);
     }
 
-    public String generateRefreshToken(String username, String role) {
+    public String generateRefreshToken(String username, String role, Long id) {
         Date expirationDate = createExpirationDate(refreshTokenExpiration);
 
-        return generateToken(username, role, expirationDate);
+        return generateToken(username, role, id, expirationDate);
     }
 
     public String getAccessTokenFromHeader(HttpServletRequest request) {
@@ -91,12 +92,12 @@ public class JwtProvider {
 
     public ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("RefreshToken", refreshToken)
-                .domain("today-space.com")
+//                .domain("today-space.com")
                 .httpOnly(true)
                 .maxAge(refreshTokenExpiration / 1000)
                 .path("/")
                 .sameSite("None")
-                .secure(true)
+//                .secure(true)
                 .build();
     }
 
