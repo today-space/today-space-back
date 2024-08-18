@@ -8,7 +8,6 @@ import com.complete.todayspace.domain.chat.entity.ChatMessage;
 import com.complete.todayspace.domain.chat.entity.ChatRoom;
 import com.complete.todayspace.domain.chat.repository.ChatRepository;
 import com.complete.todayspace.domain.chat.repository.ChatRoomRepository;
-import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.domain.user.entity.User;
@@ -29,7 +28,6 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final ProductService productService;
     private final UserService userService;
-    private final S3Provider s3Provider;
 
     @Transactional
     public void enterChatRoom(Long id, ChatRoomRequestDto requestDto) {
@@ -65,27 +63,7 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getChatRoom(Long id) {
-
-        List<ChatRoom> chatRooms = chatRoomRepository.findBySellerOrBuyer(id, id);
-
-        return chatRooms.stream()
-                .map( (chatRoom) -> {
-                    Long userId;
-
-                    if (chatRoom.getSeller().equals(id)) {
-                        userId = chatRoom.getBuyer();
-                    } else {
-                        userId = chatRoom.getSeller();
-                    }
-
-                    User user = userService.findById(userId);
-
-                    return new ChatRoomResponseDto(
-                            chatRoom.getRoomId(),
-                            user.getUsername(),
-                            s3Provider.getS3Url(user.getProfileImage())
-                    );
-                }).toList();
+        return chatRoomRepository.findByChatRoomWithUserInfo(id);
     }
 
     @Transactional
