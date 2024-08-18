@@ -37,10 +37,10 @@ public class UserService {
     private final JwtProvider jwtProvider;
     private final S3Provider s3Provider;
 
-    @Value("${cloud.aws.s3.base-url}")
-    private static String s3BaseUrl;
+    @Value("${cloud.aws.s3.baseUrl}")
+    private String s3BaseUrl;
 
-    private static final String DEFAULT_PROFILE_IMG_URL = s3BaseUrl + "profile/defaultProfileImg.png";
+    private static final String DEFAULT_PROFILE_IMG_URL = "profile/defaultProfileImg.png";
 
     @Transactional
     public void signup(SignupRequestDto requestDto) {
@@ -51,7 +51,7 @@ public class UserService {
         User user = new User(
                 requestDto.getUsername(),
                 encryptedPassword,
-                DEFAULT_PROFILE_IMG_URL,
+                s3BaseUrl + DEFAULT_PROFILE_IMG_URL,
                 UserRole.USER,
                 UserState.ACTIVE
         );
@@ -132,7 +132,7 @@ public class UserService {
         }
 
         if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-            if (!user.getProfileImage().equals(DEFAULT_PROFILE_IMG_URL)) {
+            if (!user.getProfileImage().equals(s3BaseUrl + DEFAULT_PROFILE_IMG_URL)) {
                 s3Provider.deleteFile(user.getProfileImage());
             }
 
