@@ -9,9 +9,9 @@ public class ProductResponseDto {
     private final Long price;
     private final String title;
     private final String imagePath;
-    private final boolean paymentState;
+    private final Boolean paymentState;
 
-    public ProductResponseDto(Long id, Long price, String title, String imagePath, boolean paymentState) {
+    public ProductResponseDto(Long id, Long price, String title, String imagePath, Boolean paymentState) {
         this.id = id;
         this.price = price;
         this.title = title;
