@@ -47,9 +47,12 @@ public class UserController {
     }
 
     @DeleteMapping("/auth")
-    public ResponseEntity<StatusResponseDto> withdrawal(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<StatusResponseDto> withdrawal(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response
+    ) {
 
-        userService.withdrawal(userDetails.getUser().getId());
+        userService.withdrawal(userDetails.getUser().getId(), response);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.WITHDRAWAL);
 

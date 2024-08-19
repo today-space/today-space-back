@@ -53,6 +53,7 @@ public enum ErrorCode {
     INVALID_TOKEN(401, "잘못된 JWT 토큰입니다."),
     TOKEN_MISMATCH(401, "토큰이 일치하지 않습니다."),
     TOKEN_NOT_FOUND_FOR_COOKIE(401, "쿠키에 토큰이 존재하지 않습니다."),
+    TOKEN_NOT_FOUND(404, "토큰을 찾을 수 없습니다."),
 
     //Payment
     COMPLATED_PAYMENT(409, "결제가 완료된 상품입니다"),

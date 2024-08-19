@@ -2,9 +2,11 @@ package com.complete.todayspace.domain.user.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.user.dto.*;
+import com.complete.todayspace.domain.user.entity.RefreshToken;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
+import com.complete.todayspace.domain.user.repository.RefreshTokenRepository;
 import com.complete.todayspace.domain.user.repository.UserRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -15,32 +17,45 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final S3Provider s3Provider;
 
+    @Value("${cloud.aws.s3.baseUrl}")
+    private String s3BaseUrl;
+
+    private static final String DEFAULT_PROFILE_IMG_URL = "profile/defaultProfileImg.png";
+
+    @Transactional
     public void signup(SignupRequestDto requestDto) {
 
         validUsernameUnique(requestDto.getUsername());
 
         String encryptedPassword = passwordEncoder.encode(requestDto.getPassword());
-        User user = new User(requestDto.getUsername(), encryptedPassword, "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png", UserRole.USER, UserState.ACTIVE);
+        User user = new User(
+                requestDto.getUsername(),
+                encryptedPassword,
+                s3BaseUrl + DEFAULT_PROFILE_IMG_URL,
+                UserRole.USER,
+                UserState.ACTIVE
+        );
+
         userRepository.save(user);
 
     }
@@ -48,18 +63,21 @@ public class UserService {
     @Transactional
     public void logout(Long id, HttpServletResponse response) {
 
-        findById(id).updateRefreshToken(null);
+        refreshTokenRepository.deleteById(id);
 
-        ResponseCookie responseCookie = jwtProvider.deleteRefreshTokenCookie();
-        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+        deleteCookie(response);
 
     }
 
     @Transactional
-    public void withdrawal(Long id) {
+    public void withdrawal(Long id, HttpServletResponse response) {
+
+        refreshTokenRepository.deleteById(id);
+
+        deleteCookie(response);
 
         User user = findById(id);
-        user.updateRefreshToken(null);
+
         user.withdrawal();
 
     }
@@ -67,35 +85,15 @@ public class UserService {
     @Transactional
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) {
 
-        String refreshToken = jwtProvider.getRefreshTokenFromHeader(request);
+        String refreshToken = getRefreshTokenFromHeaderAndCheck(request);
 
-        if (!StringUtils.hasText(refreshToken)) {
-            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND_FOR_COOKIE);
-        }
+        Claims userInfo = getUserInfoFromToken(refreshToken);
 
-        try {
+        Long userId = userInfo.get("id", Long.class);
+        String username = userInfo.getSubject();
+        String role = userInfo.get("auth", String.class);
 
-            Claims userInfo = jwtProvider.getClaimsFromToken(refreshToken);
-            Date expirationDate = userInfo.getExpiration();
-            User user = userRepository.findByUsername(userInfo.getSubject()).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            if (!user.getRefreshToken().equals(refreshToken)) {
-                throw new CustomException(ErrorCode.TOKEN_MISMATCH);
-            }
-
-            String newAccessToken = jwtProvider.generateAccessToken(user.getUsername(), user.getRole().toString());
-            String newRefreshToken = jwtProvider.generateToken(user.getUsername(), user.getRole().toString(), expirationDate);
-            ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(newRefreshToken);
-            jwtProvider.addAccessTokenHeader(response, newAccessToken);
-            jwtProvider.addRefreshTokenCookie(response, responseCookie.toString());
-
-            user.updateRefreshToken(newRefreshToken);
-
-        } catch (ExpiredJwtException e) {
-            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-        } catch (JwtException e) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
+        updateToken(response, userInfo, username, role, userId, refreshToken);
 
     }
 
@@ -108,7 +106,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public ProfileResponseDto getUserInfoByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return new ProfileResponseDto(user.getUsername(), s3Provider.getS3Url(user.getProfileImage()));
     }
@@ -123,55 +122,43 @@ public class UserService {
         }
 
         if (requestDto != null) {
+
             validPassword(requestDto, user);
+
             String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
+
             user.modifyPassword(encryptedPassword);
+
         }
 
         if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-            if (!user.getProfileImage().equals("https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png")) {
+            if (!user.getProfileImage().equals(s3BaseUrl + DEFAULT_PROFILE_IMG_URL)) {
                 s3Provider.deleteFile(user.getProfileImage());
             }
+
             user.modifyProfileImage(profileImageUrl);
         }
     }
 
     @Transactional
-    public void modifyUsername(Long id, ModifyUsernameRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
+    public void modifyUsername(
+            Long id,
+            ModifyUsernameRequestDto requestDto,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
 
         validUsernameUnique(requestDto.getUsername());
 
         User user = findById(id);
+
         user.modifyUsername(requestDto.getUsername());
 
-        String refreshToken = jwtProvider.getRefreshTokenFromHeader(request);
+        String refreshToken = getRefreshTokenFromHeaderAndCheck(request);
 
-        if (!StringUtils.hasText(refreshToken)) {
-            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND_FOR_COOKIE);
-        }
+        Claims userInfo = getUserInfoFromToken(refreshToken);
 
-        try {
-
-            Claims userInfo = jwtProvider.getClaimsFromToken(refreshToken);
-            Date expirationDate = userInfo.getExpiration();
-
-            if (!user.getRefreshToken().equals(refreshToken)) {
-                throw new CustomException(ErrorCode.TOKEN_MISMATCH);
-            }
-
-            String newAccessToken = jwtProvider.generateAccessToken(requestDto.getUsername(), user.getRole().toString());
-            String newRefreshToken = jwtProvider.generateToken(requestDto.getUsername(), user.getRole().toString(), expirationDate);
-            ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(newRefreshToken);
-            jwtProvider.addAccessTokenHeader(response, newAccessToken);
-            jwtProvider.addRefreshTokenCookie(response, responseCookie.toString());
-
-            user.updateRefreshToken(newRefreshToken);
-
-        } catch (ExpiredJwtException e) {
-            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
-        } catch (JwtException e) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
+        updateToken(response, userInfo, requestDto.getUsername(), user.getRole().toString(), id, refreshToken);
 
     }
 
@@ -181,8 +168,76 @@ public class UserService {
         }
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    private void validUsernameUnique(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
+        }
+    }
+
+    private void deleteCookie(HttpServletResponse response) {
+
+        ResponseCookie responseCookie = jwtProvider.deleteRefreshTokenCookie();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+
+    }
+
+    private String getRefreshTokenFromHeaderAndCheck(HttpServletRequest request) {
+
+        String refreshToken = jwtProvider.getRefreshTokenFromHeader(request);
+
+        if (!StringUtils.hasText(refreshToken)) {
+            throw new CustomException(ErrorCode.TOKEN_NOT_FOUND_FOR_COOKIE);
+        }
+
+        return refreshToken;
+    }
+
+    private Claims getUserInfoFromToken(String refreshToken) {
+
+        try {
+            return jwtProvider.getClaimsFromToken(refreshToken);
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(ErrorCode.TOKEN_EXPIRED);
+        } catch (JwtException e) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+    }
+
+    private void updateToken(
+            HttpServletResponse response,
+            Claims userInfo,
+            String username,
+            String role,
+            Long userId,
+            String refreshToken
+    ) {
+
+        Date expirationDate = userInfo.getExpiration();
+
+        RefreshToken token = RefreshTokenFindById(userId);
+
+        if (!token.getRefreshToken().equals(refreshToken)) {
+            throw new CustomException(ErrorCode.TOKEN_MISMATCH);
+        }
+
+        String newAccessToken = jwtProvider.generateAccessToken(username, role, userId);
+        String newRefreshToken = jwtProvider.generateToken(username, role, userId, expirationDate);
+
+        ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(newRefreshToken);
+
+        jwtProvider.addAccessTokenHeader(response, newAccessToken);
+        jwtProvider.addRefreshTokenCookie(response, responseCookie.toString());
+
+        Long expiration = jwtProvider.getExpirationLong(newRefreshToken);
+
+        saveRefreshToken(userId, newRefreshToken, expiration);
+
+    }
+
+    private RefreshToken RefreshTokenFindById(Long id) {
+        return refreshTokenRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
     }
 
     private void validPassword(ModifyProfileRequestDto requestDto, User user) {
@@ -203,10 +258,24 @@ public class UserService {
         return passwordEncoder.matches(password, dbPassword);
     }
 
-    private void validUsernameUnique(String username) {
-        if (userRepository.existsByUsername(username)) {
-            throw new CustomException(ErrorCode.USER_NOT_UNIQUE);
-        }
+    public void saveRefreshToken(Long userId, String refreshToken, Long expiration) {
+
+        RefreshToken token = new RefreshToken(userId, refreshToken, expiration);
+
+        refreshTokenRepository.save(token);
+
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User findByoAuthId(String oAuthId) {
+        return userRepository.findByoAuthId(oAuthId).orElse(null);
+    }
+
+    public void saveUser(User user) {
+        userRepository.save(user);
     }
 
 }
