@@ -39,26 +39,27 @@ public class JwtProvider {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String generateToken(String username, String role, Date expirationDate) {
+    public String generateToken(String username, String role, Long id, Date expirationDate) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("auth", role)
+                .claim("id", id)
                 .setExpiration(expirationDate)
                 .setIssuedAt(new Date())
                 .signWith(key, signatureAlgorithm)
                 .compact();
     }
 
-    public String generateAccessToken(String username, String role) {
+    public String generateAccessToken(String username, String role, Long id) {
         Date expirationDate = createExpirationDate(accessTokenExpiration);
 
-        return generateToken(username, role, expirationDate);
+        return generateToken(username, role, id, expirationDate);
     }
 
-    public String generateRefreshToken(String username, String role) {
+    public String generateRefreshToken(String username, String role, Long id) {
         Date expirationDate = createExpirationDate(refreshTokenExpiration);
 
-        return generateToken(username, role, expirationDate);
+        return generateToken(username, role, id, expirationDate);
     }
 
     public String getAccessTokenFromHeader(HttpServletRequest request) {
@@ -125,6 +126,16 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public Date getExpirationDate(String token) {
+        Claims claims = getClaimsFromToken(token);
+
+        return claims.getExpiration();
+    }
+
+    public Long getExpirationLong(String token) {
+        return (getExpirationDate(token).getTime() - System.currentTimeMillis()) / 1000;
     }
 
     private Date createExpirationDate(Long ms) {

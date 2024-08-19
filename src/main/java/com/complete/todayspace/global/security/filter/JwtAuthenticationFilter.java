@@ -1,8 +1,10 @@
 package com.complete.todayspace.global.security.filter;
 
 import com.complete.todayspace.domain.user.dto.LoginRequestDto;
+import com.complete.todayspace.domain.user.entity.RefreshToken;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserState;
+import com.complete.todayspace.domain.user.repository.RefreshTokenRepository;
 import com.complete.todayspace.domain.user.repository.UserRepository;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
@@ -28,15 +30,28 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public JwtAuthenticationFilter(JwtProvider jwtProvider, UserRepository userRepository) {
+    public JwtAuthenticationFilter(
+            JwtProvider jwtProvider,
+            UserRepository userRepository,
+            RefreshTokenRepository refreshTokenRepository
+    ) {
+
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
+
         setFilterProcessesUrl("/v1/auth/login");
+
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws AuthenticationException {
+
         if (!request.getMethod().equals("POST")) {
 
             SecurityErrorResponse securityErrorResponse = new SecurityErrorResponse();
@@ -54,20 +69,33 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             LoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
 
-            return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(requestDto.getUsername(), requestDto.getPassword(), null));
+            return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(
+                    requestDto.getUsername(),
+                    requestDto.getPassword(),
+                    null
+            ));
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+    protected void successfulAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain,
+            Authentication authResult
+    ) throws IOException {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
         String username = userDetails.getUsername();
-        String userRole = userDetails.getAuthorities().iterator().next().getAuthority();
+        String userRole = userDetails.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
 
-        User user = userRepository.findByUsername(username).orElseThrow( () -> new UsernameNotFoundException(ErrorCode.CHECK_USERNAME_PASSWORD.getMessage()));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow( () -> new UsernameNotFoundException(ErrorCode.CHECK_USERNAME_PASSWORD.getMessage()));
 
         if (user.getState().equals(UserState.LEAVE)) {
 
@@ -77,14 +105,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             return;
         }
 
-        String accessToken = jwtProvider.generateAccessToken(username, userRole);
-        String refreshToken = jwtProvider.generateRefreshToken(username, userRole);
+        String accessToken = jwtProvider.generateAccessToken(username, userRole, user.getId());
+        String refreshToken = jwtProvider.generateRefreshToken(username, userRole, user.getId());
+        Long expiration = jwtProvider.getExpirationLong(refreshToken);
+
+        refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken, expiration));
+
         ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
         jwtProvider.addAccessTokenHeader(response, accessToken);
         jwtProvider.addRefreshTokenCookie(response, responseCookie.toString());
-
-        user.updateRefreshToken(refreshToken);
-        userRepository.save(user);
 
         StatusResponseDto statusResponseDto = new StatusResponseDto(SuccessCode.LOGIN);
 
@@ -94,7 +123,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+    protected void unsuccessfulAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException failed
+    ) throws IOException {
 
         SecurityErrorResponse securityErrorResponse = new SecurityErrorResponse();
         securityErrorResponse.sendResponse(response, ErrorCode.CHECK_USERNAME_PASSWORD);
