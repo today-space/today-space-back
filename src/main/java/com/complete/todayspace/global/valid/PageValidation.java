@@ -32,4 +32,18 @@ public class PageValidation {
         return page;
     }
 
+    public static int pageValidationGetProduct(String page) {
+
+        int pageNumber;
+        try {
+            pageNumber = Integer.parseInt(page);
+            if (pageNumber < 1) {
+                throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+            }
+        } catch (NumberFormatException e) {
+            throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
+        }
+        return pageNumber;
+    }
+
 }
