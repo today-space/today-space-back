@@ -7,7 +7,6 @@ import com.complete.todayspace.domain.payment.entity.Payment;
 import com.complete.todayspace.domain.payment.entity.State;
 import com.complete.todayspace.domain.payment.repository.PaymentRepository;
 import com.complete.todayspace.domain.product.entity.Product;
-import com.complete.todayspace.domain.product.service.ProductService;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
@@ -33,7 +32,6 @@ public class PaymentService {
     private final RestTemplate restTemplate;
     private ReadyResponseDto kakaoReady;
     private final PaymentRepository paymentRepository;
-    private final ProductService productService;
 
     @Value("${KAKAO_PAY_SECRET_KEY}")
     private String KAKAO_PAY_SECRET_KEY;
@@ -48,7 +46,8 @@ public class PaymentService {
     private String frontURL;
 
     @Transactional
-    public ReadyResponseDto readyPayment(User user, PaymentInfoRequestDto paymentInfoRequestDto) {
+    public ReadyResponseDto readyPayment(User user, PaymentInfoRequestDto paymentInfoRequestDto,
+        Product product) {
 
         HashMap<String, String> parameters = new HashMap<>();
 
@@ -71,8 +70,6 @@ public class PaymentService {
                KAKAO_PAY_URL+"/online/v1/payment/ready",
                requestEntity,
                ReadyResponseDto.class);
-
-           Product product = productService.findByProduct(paymentInfoRequestDto.getProductId());
 
            Optional<Payment> existingProgress = paymentRepository.findFirstByProductIdAndState(
                paymentInfoRequestDto.getProductId(), State.PROGRESS);
