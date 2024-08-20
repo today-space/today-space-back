@@ -14,7 +14,7 @@ public class TimeTrackerAop {
     private static final Logger logger = LoggerFactory.getLogger(TimeTrackerAop.class);
 
     @Around("execution(* com.complete.todayspace.domain.chat.service.ChatService.getChatRoom(..)) || "
-            + "execution(* com.complete.todayspace.domain.product.service.ProductService.getProductPage(..)) || "
+            + "execution(* com.complete.todayspace.domain.product.service.ProductService.getResponseDto(..)) || "
             + "execution(* com.complete.todayspace.domain.product.service.ProductService.getMyProductList(..))")
     public Object checkTime(ProceedingJoinPoint joinPoint) throws Throwable {
 
