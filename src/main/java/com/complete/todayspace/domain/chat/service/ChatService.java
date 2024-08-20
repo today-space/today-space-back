@@ -63,7 +63,27 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getChatRoom(Long id) {
-        return chatRoomRepository.findByChatRoomWithUserInfo(id);
+        // return chatRoomRepository.findByChatRoomWithUserInfo(id);
+        List<ChatRoom> chatRooms = chatRoomRepository.findBySellerOrBuyer(id, id);
+
+        return chatRooms.stream()
+            .map( (chatRoom) -> {
+                Long userId;
+
+                if (chatRoom.getSeller().equals(id)) {
+                    userId = chatRoom.getBuyer();
+                } else {
+                    userId = chatRoom.getSeller();
+                }
+
+                User user = userService.findById(userId);
+
+                return new ChatRoomResponseDto(
+                    chatRoom.getRoomId(),
+                    user.getUsername(),
+                    user.getProfileImage()
+                );
+            }).toList();
     }
 
     @Transactional
