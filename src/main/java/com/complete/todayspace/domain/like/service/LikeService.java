@@ -5,16 +5,13 @@ import com.complete.todayspace.domain.like.repository.LikeRepository;
 import com.complete.todayspace.domain.post.entitiy.Post;
 import com.complete.todayspace.domain.post.repository.PostRepository;
 import com.complete.todayspace.domain.user.entity.User;
-import com.complete.todayspace.global.dto.StatusResponseDto;
-import com.complete.todayspace.global.entity.SuccessCode;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,18 +22,17 @@ public class LikeService {
 
     @Transactional
     public boolean toggleLike(User user, Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Post post = findPostById(postId);
 
         Optional<Like> existingLike = likeRepository.findByUserIdAndPostId(user.getId(), postId);
 
         if (existingLike.isPresent()) {
             likeRepository.delete(existingLike.get());
-            return false; // 좋아요 삭제
+            return false;
         } else {
             Like like = new Like(user, post);
             likeRepository.save(like);
-            return true; // 좋아요 추가
+            return true;
         }
     }
 
@@ -50,4 +46,8 @@ public class LikeService {
         return likeRepository.countByPostId(postId);
     }
 
+    private Post findPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+    }
 }

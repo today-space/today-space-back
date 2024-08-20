@@ -25,39 +25,13 @@ public class S3Provider {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    @Value("${cloud.aws.s3.base-url}")
+    @Value("${cloud.aws.s3.baseUrl}")
     private String s3BaseUrl;
 
     private final AmazonS3 s3Client;
 
     public void createFolder(String folderName) {
         s3Client.putObject(bucket, folderName + "/", new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
-    }
-
-    public List<String> uploadFile(String folderName, List<MultipartFile> multipartFile) {
-        List<String> fileNameList = new ArrayList<>();
-        createFolder(folderName);
-
-        multipartFile.forEach(file -> {
-            String fileName = createFileName(file.getOriginalFilename());
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(file.getSize());
-            objectMetadata.setContentType(file.getContentType());
-
-            try (InputStream inputStream = file.getInputStream()) {
-                s3Client.putObject(
-                        new PutObjectRequest(bucket, folderName + "/" + fileName, inputStream, objectMetadata)
-                                .withCannedAcl(CannedAccessControlList.PublicRead));
-            } catch (IOException e) {
-                throw new CustomException(ErrorCode.FILE_UPLOAD_ERROR);
-            }
-
-            String filePath = folderName + "/" + fileName;
-            fileNameList.add(filePath);
-
-        });
-
-        return fileNameList;
     }
 
     public void deleteFile(String fileUrl) {
