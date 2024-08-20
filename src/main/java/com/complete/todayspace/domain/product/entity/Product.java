@@ -1,6 +1,8 @@
 package com.complete.todayspace.domain.product.entity;
 
 import com.complete.todayspace.domain.payment.entity.Payment;
+import com.complete.todayspace.domain.product.dto.CreateProductRequestDto;
+import com.complete.todayspace.domain.product.dto.EditProductRequestDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.wish.entity.Wish;
 import com.complete.todayspace.global.entity.AllTimestamp;
@@ -60,20 +62,20 @@ public class Product extends AllTimestamp {
         this.user = user;
     }
 
-    public Product(String title, Long price, String content, Address address, State state, User user) {
-        this.price = price;
-        this.title = title;
-        this.content = content;
-        this.address = address;
-        this.state = state;
+    public Product(CreateProductRequestDto requestDto, User user) {
+        this.price = requestDto.getPrice();
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+        this.address = requestDto.getAddress();
+        this.state = requestDto.getState();
         this.user = user;
     }
 
-    public void updateProduct(Long price, String title, String content, Address address, State state) {
-        this.price = price;
-        this.title = title;
-        this.content = content;
-        this.address = address;
-        this.state = state;
+    public void updateProduct(EditProductRequestDto requestDto) {
+        this.price = requestDto.getPrice();
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+        this.address = requestDto.getAddress();
+        this.state = requestDto.getState();
     }
 }
