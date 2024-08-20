@@ -222,25 +222,8 @@ public class ProductService {
 
         int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Product> productPage = productRepository.findByUserId(id, pageable);
 
-        return productPage.map((product) -> {
-
-            List<ImageProduct> images = imageProductRepository.findByProductIdOrderByCreatedAtAsc(
-                product.getId());
-
-            ImageProduct firstImage = images.isEmpty() ? null : images.get(0);
-
-            if (firstImage == null) {
-                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
-            }
-
-            Payment payment = paymentService.findByProductId(product.getId());
-            boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
-
-            return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(),
-                s3Provider.getS3Url(firstImage.getFilePath()), paymentState);
-        });
+        return productRepository.findMyProductList(id, pageable);
     }
 
     private boolean isAddressValid(String address) {

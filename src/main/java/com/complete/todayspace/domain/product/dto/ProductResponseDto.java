@@ -1,5 +1,6 @@
 package com.complete.todayspace.domain.product.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 
 @Getter
@@ -11,7 +12,8 @@ public class ProductResponseDto {
     private final String imagePath;
     private final Boolean paymentState;
 
-    public ProductResponseDto(Long id, Long price, String title, String imagePath, Boolean paymentState) {
+    @QueryProjection
+    public ProductResponseDto(Long id, Long price, String title, String imagePath, boolean paymentState) {
         this.id = id;
         this.price = price;
         this.title = title;
