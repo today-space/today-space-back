@@ -3,18 +3,17 @@ package com.complete.todayspace.domain.hashtag.repository;
 import com.complete.todayspace.domain.hashtag.entity.QHashtag;
 import com.complete.todayspace.domain.hashtag.entity.QHashtagList;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class HashtagRepositoryImpl implements HashtagRepositoryCustom {
+public class HashtagRepositoryQueryImpl implements HashtagRepositoryQuery {
 
     private final JPAQueryFactory queryFactory;
 
-    public HashtagRepositoryImpl(@Qualifier("jpaQueryFactory") JPAQueryFactory queryFactory) {
+    public HashtagRepositoryQueryImpl(@Qualifier("jpaQueryFactory") JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
 

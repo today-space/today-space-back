@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface HashtagRepository extends JpaRepository<Hashtag, Long>, HashtagRepositoryCustom {
+public interface HashtagRepository extends JpaRepository<Hashtag, Long>, HashtagRepositoryQuery {
     List<Hashtag> findByPostId(Long postId);
 
     List<Hashtag> findByHashtagList(HashtagList hashtagList);
