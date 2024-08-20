@@ -4,6 +4,7 @@ import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.payment.entity.Payment;
 import com.complete.todayspace.domain.payment.entity.State;
 import com.complete.todayspace.domain.payment.repository.PaymentRepository;
+import com.complete.todayspace.domain.payment.service.PaymentService;
 import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.ImageProduct;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -34,13 +34,12 @@ public class ProductService {
     private final ImageProductRepository imageProductRepository;
     private final S3Provider s3Provider;
     private final WishRepository wishRepository;
-    private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
 
     @Transactional
     public void createProduct(User user, CreateProductRequestDto requestDto) {
 
-        Product saveProduct = new Product(requestDto.getTitle(), requestDto.getPrice(),
-                requestDto.getContent(), requestDto.getAddress(), requestDto.getState(), user);
+        Product saveProduct = new Product(requestDto, user);
 
         productRepository.save(saveProduct);
 
@@ -51,24 +50,23 @@ public class ProductService {
     }
 
     @Transactional
-    public void editProduct(Long id, Long productsId, EditProductRequestDto requestDto) {
+    public void editProduct(Long id, Long productId, EditProductRequestDto requestDto) {
 
-        Product product = findByProduct(productsId);
+        Product product = findByProduct(productId);
 
-        if (!isProductOwner(productsId, id)) {
+        if (!isProductOwner(productId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
 
-        product.updateProduct(requestDto.getPrice(), requestDto.getTitle(), requestDto.getContent(),
-            requestDto.getAddress(), requestDto.getState());
+        product.updateProduct(requestDto);
     }
 
     @Transactional
-    public void updateProduct(Long id, Long productsId) {
+    public void updateProduct(Long id, Long productId) {
 
-        Product product = findByProduct(productsId);
+        Product product = findByProduct(productId);
 
-        if (!isProductOwner(productsId, id)) {
+        if (!isProductOwner(productId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
 
@@ -77,14 +75,14 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(Long id, Long productsId) {
+    public void deleteProduct(Long id, Long productId) {
 
-        Product product = findByProduct(productsId);
-        if (!isProductOwner(productsId, id)) {
+        Product product = findByProduct(productId);
+        if (!isProductOwner(productId, id)) {
             throw new CustomException(ErrorCode.NOT_OWNER_PRODUCT);
         }
 
-        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
+        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productId);
 
         for (ImageProduct imageProduct : imageProducts) {
             String filePath = imageProduct.getFilePath();
@@ -96,11 +94,11 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public ProductDetailResponseDto getProduct(Long productsId) {
+    public ProductDetailResponseDto getProduct(Long productId) {
 
-        Product product = findByProduct(productsId);
+        Product product = findByProduct(productId);
 
-        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productsId);
+        List<ImageProduct> imageProducts = imageProductRepository.findByProductId(productId);
 
         List<ImageProductDto> imageUrlList = imageProducts.stream()
             .map(imageProduct -> new ImageProductDto(
@@ -109,44 +107,63 @@ public class ProductService {
             ))
             .toList();
 
-        Payment payment = paymentRepository.findByProductId(product.getId());
+        Payment payment = paymentService.findByProductId(product.getId());
         boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
-        // 한 곳에서만 사용가능
 
         String paymentUser = null;
         if (payment != null && payment.getUser().getUsername() != null) {
             paymentUser = payment.getUser().getUsername();
         }
 
-        return new ProductDetailResponseDto(product.getId(), product.getUser().getId(), product.getUser().getUsername(), product.getUser().getProfileImage(),
+        return new ProductDetailResponseDto(product.getId(), product.getUser().getId(),
+            product.getUser().getUsername(), product.getUser().getProfileImage(),
             product.getPrice(), product.getTitle(), product.getContent(), product.getAddress(),
             product.getState(), product.getUpdatedAt(), imageUrlList, paymentState, paymentUser);
+    }
+
+    public Page<ProductResponseDto> getResponseDto(Pageable pageable,
+        PageParamDto pageParamDto) {
+
+        if (Boolean.TRUE.equals(pageParamDto.getTopWished())) {
+            return getTopWishedProducts();
+        } else if (pageParamDto.getSearch() != null && pageParamDto.getRegion() == null) {
+            return getProductSearch(pageable, pageParamDto.getSearch());
+        } else if (pageParamDto.getRegion() != null && pageParamDto.getSearch() == null) {
+            return getProductRegion(pageable, pageParamDto.getRegion());
+        } else if (pageParamDto.getSearch() != null && pageParamDto.getRegion() != null) {
+            return getProductSearchRegion(pageable, pageParamDto.getSearch(),
+                pageParamDto.getRegion());
+        } else {
+            return getProductPage(pageable);
+        }
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductSearch(Pageable pageable, String search) {
 
-        Page<Product> page = productRepository.findProductsByTitleLike(pageable, ("%" + search + "%"));
+        Page<ProductResponseDto> page = productRepository.findProductsByTitleLike(pageable, ("%" + search + "%"));
 
         if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        return getProductImageResponseDtoPage(page);
+        return page;
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductRegion(Pageable pageable, String region) {
 
-        Page<Product> page;
+        Page<ProductResponseDto> page;
 
         if (!isAddressValid(region)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         if (region.equals("ALL")) {
-            page = productRepository.findAll(pageable);
+
+            page = productRepository.findProducts(pageable);
         } else {
+
             page = productRepository.findAllByAddress(pageable, Address.valueOf(region));
         }
 
@@ -154,14 +171,16 @@ public class ProductService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        return getProductImageResponseDtoPage(page);
+//        return getProductImageResponseDtoPage(page);
+
+        return page;
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductSearchRegion(Pageable pageable, String search,
         String region) {
 
-        Page<Product> page;
+        Page<ProductResponseDto> page;
 
         if (!isAddressValid(region)) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
@@ -179,19 +198,23 @@ public class ProductService {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        return getProductImageResponseDtoPage(page);
+        return page;
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponseDto> getProductPage(Pageable pageable) {
 
-        Page<Product> page = productRepository.findAll(pageable);
+        System.out.println("여기서부터 전체 조회");
+        Page<ProductResponseDto> page = productRepository.findProducts(pageable);
+        System.out.println("여기까지 전체 조회");
 
         if (page.isEmpty()) {
             throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
-        return getProductImageResponseDtoPage(page);
+//        return getProductImageResponseDtoPage(page);
+
+        return page;
     }
 
     @Transactional(readOnly = true)
@@ -235,7 +258,7 @@ public class ProductService {
                 throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
             }
 
-            Payment payment = paymentRepository.findByProductId(product.getId());
+            Payment payment = paymentService.findByProductId(product.getId());
             boolean paymentState = payment != null && payment.getState() == State.COMPLATE;
 
             return new ProductResponseDto(product.getId(), product.getPrice(), product.getTitle(),

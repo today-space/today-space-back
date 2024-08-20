@@ -10,7 +10,7 @@ public class ProductResponseDto {
     private final Long price;
     private final String title;
     private final String imagePath;
-    private final boolean paymentState;
+    private final Boolean paymentState;
 
     @QueryProjection
     public ProductResponseDto(Long id, Long price, String title, String imagePath, boolean paymentState) {
