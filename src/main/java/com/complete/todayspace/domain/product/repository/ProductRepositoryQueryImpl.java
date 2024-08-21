@@ -87,11 +87,18 @@ public class ProductRepositoryQueryImpl implements ProductRepositoryQuery {
                 product.id,
                 product.price,
                 product.title,
-                imageProduct.filePath,
-                payment.state.eq(State.COMPLATE).as("paymentState")
+                    JPAExpressions
+                            .select(imageProduct.filePath)
+                            .from(imageProduct)
+                            .where(imageProduct.id.eq(
+                                    JPAExpressions
+                                            .select(imageProduct.id.min())
+                                            .from(imageProduct)
+                                            .where(imageProduct.product.id.eq(product.id))
+                            )),
+                    payment.state.when(State.COMPLATE).then(true).otherwise(false)
             ))
             .from(product)
-            .leftJoin(product.imageProducts, imageProduct)
             .leftJoin(product.payment, payment)
             .where(product.title.like("%" + search + "%"))
             .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
@@ -198,11 +205,18 @@ public class ProductRepositoryQueryImpl implements ProductRepositoryQuery {
                 product.id,
                 product.price,
                 product.title,
-                imageProduct.filePath,
-                payment.state.eq(State.COMPLATE).as("paymentState")
+                    JPAExpressions
+                            .select(imageProduct.filePath)
+                            .from(imageProduct)
+                            .where(imageProduct.id.eq(
+                                    JPAExpressions
+                                            .select(imageProduct.id.min())
+                                            .from(imageProduct)
+                                            .where(imageProduct.product.id.eq(product.id))
+                            )),
+                    payment.state.when(State.COMPLATE).then(true).otherwise(false)
             ))
             .from(product)
-            .leftJoin(product.imageProducts, imageProduct)
             .leftJoin(product.payment, payment)
             .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
             .offset(pageable.getOffset())

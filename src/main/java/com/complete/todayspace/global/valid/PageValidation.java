@@ -36,6 +36,10 @@ public class PageValidation {
 
         int pageNumber;
         try {
+            if (page == null) {
+                page = "1";
+            }
+
             pageNumber = Integer.parseInt(page);
             if (pageNumber < 1) {
                 throw new CustomException(ErrorCode.INVALID_URL_ACCESS);
