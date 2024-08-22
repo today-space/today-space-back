@@ -1,21 +1,34 @@
 package com.complete.todayspace.domain.post.repository;
 
+import com.complete.todayspace.domain.common.S3Provider;
+import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
+import com.complete.todayspace.domain.like.entity.QLike;
+import com.complete.todayspace.domain.post.dto.MyPostResponseDto;
+import com.complete.todayspace.domain.post.dto.PostImageDto;
+import com.complete.todayspace.domain.post.dto.PostResponseDto;
+import com.complete.todayspace.domain.post.dto.QMyPostResponseDto;
+import com.complete.todayspace.domain.post.entitiy.QImagePost;
+import com.complete.todayspace.domain.post.entitiy.QPost;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.complete.todayspace.domain.hashtag.entity.QHashtag.hashtag;
 import static com.complete.todayspace.domain.hashtag.entity.QHashtagList.hashtagList;
 import static com.complete.todayspace.domain.like.entity.QLike.like;
 import static com.complete.todayspace.domain.post.entitiy.QImagePost.imagePost;
 import static com.complete.todayspace.domain.post.entitiy.QPost.post;
 import static com.complete.todayspace.domain.user.entity.QUser.user;
-
-import com.complete.todayspace.domain.common.S3Provider;
-import com.complete.todayspace.domain.hashtag.dto.HashtagDto;
-import com.complete.todayspace.domain.post.dto.PostImageDto;
-import com.complete.todayspace.domain.post.dto.PostResponseDto;
-import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class PostRepositoryQueryImpl implements PostRepositoryQuery{
@@ -68,4 +81,57 @@ public class PostRepositoryQueryImpl implements PostRepositoryQuery{
 
         return postQuery;
     }
+
+    @Override
+    public Page<MyPostResponseDto> findMyPostList(Long userId, Pageable pageable) {
+
+        QPost post = QPost.post;
+        QImagePost imagePost = QImagePost.imagePost;
+        QLike like = QLike.like;
+
+        JPQLQuery<String> imagePathSubQuery = JPAExpressions
+                .select(imagePost.filePath)
+                .from(imagePost)
+                .where(imagePost.id.eq(
+                        JPAExpressions
+                                .select(imagePost.id.min())
+                                .from(imagePost)
+                                .where(imagePost.post.id.eq(post.id))
+                ));
+
+        JPQLQuery<Long> likeCountSubQuery = JPAExpressions
+                .select(like.count())
+                .from(like)
+                .where(like.post.id.eq(post.id));
+
+        List<MyPostResponseDto> postList = jpaQueryFactory
+                .select(new QMyPostResponseDto(
+                        post.id,
+                        imagePathSubQuery,
+                        likeCountSubQuery
+                )).from(post)
+                .where(post.user.id.eq(userId))
+                .orderBy(post.createdAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        postList.forEach(this::validateProductImage);
+
+        long total = jpaQueryFactory
+                .select(post.id)
+                .from(post)
+                .where(post.user.id.eq(userId))
+                .fetch()
+                .size();
+
+        return new PageImpl<>(postList, pageable, total);
+    }
+
+    private void validateProductImage(MyPostResponseDto postResponseDto) {
+        if (postResponseDto.getImagePath() == null) {
+            throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
+        }
+    }
+
 }
