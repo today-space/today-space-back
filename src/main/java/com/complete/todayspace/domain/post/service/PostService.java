@@ -202,26 +202,16 @@ public class PostService {
 
         int size = 6;
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Post> postPage = postRepository.findByUserIdOrderByCreatedAtDesc(id, pageable);
 
-        return postPage.map(post -> {
-            List<ImagePost> images = imagePostRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
+        Page<MyPostResponseDto> postList = postRepository.findMyPostList(id, pageable);
 
-            ImagePost firstImage = images.isEmpty() ? null : images.get(0);
+        List<Long> postListIdList = postList.map(MyPostResponseDto::getId).stream().toList();
 
-            if (firstImage == null) {
-                throw new CustomException(ErrorCode.NO_REPRESENTATIVE_IMAGE_FOUND);
-            }
+        List<Hashtag> hashtags = hashtagRepository.findByPostIdIn(postListIdList);
 
-            List<Hashtag> hashtags = hashtagRepository.findByPostId(post.getId());
-            List<HashtagDto> hashtagDto = hashtags.stream()
-                    .map((hashtag) -> new HashtagDto(hashtag.getHashtagList().getHashtagName()))
-                    .toList();
+        postList.forEach(myPostResponseDto -> myPostResponseDto.matchHashTag(hashtags));
 
-            long likeCount = likeRepository.countByPostId(post.getId());
-
-            return new MyPostResponseDto(post.getId(), s3Provider.getS3Url(firstImage.getFilePath()), hashtagDto, likeCount);
-        });
+        return postList;
     }
 
     public Page<PostResponseDto> getTopLikedPosts(PageRequest pageRequest) {
