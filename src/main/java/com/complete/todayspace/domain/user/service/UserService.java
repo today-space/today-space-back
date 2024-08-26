@@ -2,7 +2,7 @@ package com.complete.todayspace.domain.user.service;
 
 import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.user.dto.*;
-import com.complete.todayspace.domain.user.entity.RefreshToken;
+import com.complete.todayspace.domain.user.entity.UserRefreshToken;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
@@ -216,11 +216,7 @@ public class UserService {
 
         Date expirationDate = userInfo.getExpiration();
 
-        RefreshToken token = RefreshTokenFindById(userId);
-
-        if (!token.getRefreshToken().equals(refreshToken)) {
-            throw new CustomException(ErrorCode.TOKEN_MISMATCH);
-        }
+        validateRefreshTokenByToken(userId, refreshToken);
 
         String newAccessToken = jwtProvider.generateAccessToken(username, role, userId);
         String newRefreshToken = jwtProvider.generateToken(username, role, userId, expirationDate);
@@ -236,8 +232,16 @@ public class UserService {
 
     }
 
-    private RefreshToken RefreshTokenFindById(Long id) {
+    private UserRefreshToken findUserRefreshTokenById(Long id) {
         return refreshTokenRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
+    }
+
+    private void validateRefreshTokenByToken (Long userId, String refreshToken) {
+
+        UserRefreshToken token = findUserRefreshTokenById(userId);
+
+        token.validateRefreshToken(refreshToken);
+
     }
 
     private void validPassword(ModifyProfileRequestDto requestDto, User user) {
@@ -260,7 +264,7 @@ public class UserService {
 
     public void saveRefreshToken(Long userId, String refreshToken, Long expiration) {
 
-        RefreshToken token = new RefreshToken(userId, refreshToken, expiration);
+        UserRefreshToken token = new UserRefreshToken(userId, refreshToken, expiration);
 
         refreshTokenRepository.save(token);
 
