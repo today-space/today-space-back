@@ -1,7 +1,7 @@
 package com.complete.todayspace.global.security.filter;
 
 import com.complete.todayspace.domain.user.dto.LoginRequestDto;
-import com.complete.todayspace.domain.user.entity.RefreshToken;
+import com.complete.todayspace.domain.user.entity.UserRefreshToken;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserState;
 import com.complete.todayspace.domain.user.repository.RefreshTokenRepository;
@@ -109,7 +109,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String refreshToken = jwtProvider.generateRefreshToken(username, userRole, user.getId());
         Long expiration = jwtProvider.getExpirationLong(refreshToken);
 
-        refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken, expiration));
+        refreshTokenRepository.save(new UserRefreshToken(user.getId(), refreshToken, expiration));
 
         ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
         jwtProvider.addAccessTokenHeader(response, accessToken);
