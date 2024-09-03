@@ -48,7 +48,7 @@ public class WishController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/my/wishs")
+    @GetMapping("/wishes/my")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyWishList(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam Map<String, String> params

@@ -111,7 +111,7 @@ public class ProductController {
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
 
-    @GetMapping("/my/products")
+    @GetMapping("/products/my")
     public ResponseEntity<DataResponseDto<Page<ProductResponseDto>>> getMyProductList(
         @AuthenticationPrincipal UserDetailsImpl userDetails,
         @RequestParam Map<String, String> params
