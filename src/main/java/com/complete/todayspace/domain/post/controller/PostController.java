@@ -170,7 +170,7 @@ public class PostController {
         return new ResponseEntity<>(new StatusResponseDto(SuccessCode.COMMENT_CREATE), HttpStatus.CREATED);
     }
 
-    @GetMapping("/my/posts")
+    @GetMapping("/posts/my")
     public ResponseEntity<DataResponseDto<Page<MyPostResponseDto>>> getMyPostList(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam Map<String, String> params

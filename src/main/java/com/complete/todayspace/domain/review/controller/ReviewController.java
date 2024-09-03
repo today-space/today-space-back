@@ -51,7 +51,7 @@ public class ReviewController {
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
-    @GetMapping("/my/review")
+    @GetMapping("/reviews/my")
     public ResponseEntity<DataResponseDto<Page<ReviewResponseDto>>> getMyReview(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam Map<String, String> params
