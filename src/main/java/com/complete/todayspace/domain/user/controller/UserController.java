@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1")
@@ -23,17 +22,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/auth/signup")
-    public ResponseEntity<StatusResponseDto> signup(@Valid @RequestBody SignupRequestDto requestDto) {
-
-        userService.signup(requestDto);
-
-        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.SIGNUP_CREATE);
-
-        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
-    }
-
-    @PostMapping("/auth/logout")
+    @PostMapping("/user/logout")
     public ResponseEntity<StatusResponseDto> logout(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             HttpServletResponse response
@@ -46,20 +35,7 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @DeleteMapping("/auth")
-    public ResponseEntity<StatusResponseDto> withdrawal(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            HttpServletResponse response
-    ) {
-
-        userService.withdrawal(userDetails.getUser().getId(), response);
-
-        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.WITHDRAWAL);
-
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
-    }
-
-    @PostMapping("/auth/refresh")
+    @PostMapping("/user/token/refresh")
     public ResponseEntity<StatusResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
 
         userService.refreshToken(request, response);
@@ -69,41 +45,35 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @PostMapping("/auth/check")
-    public ResponseEntity<StatusResponseDto> checkUsername(@Valid @RequestBody CheckUsernameRequestDto requestDto) {
+    @GetMapping("/user/{username}")
+    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getUserInfoByUsername(@PathVariable String username) {
 
-        userService.checkUsername(requestDto);
+        ProfileResponseDto responseDto = userService.getUserInfoByUsername(username);
 
-        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.CHECK_USERNAME);
-
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
-    }
-
-    @GetMapping("/my/profile")
-    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-
-        ProfileResponseDto responseDto = userService.getProfile(userDetails.getUser().getId());
-
-        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_GET, responseDto);
+        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(
+                SuccessCode.PROFILE_GET,
+                responseDto
+        );
 
         return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
-    @PatchMapping("/my/profile")
-    public ResponseEntity<StatusResponseDto> modifyProfile(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @Valid @RequestPart(value = "data", required = false) ModifyProfileRequestDto requestDto,
-            @RequestPart(value = "profileImageUrl", required = false) String profileImageUrl
+    @GetMapping("/user/profile")
+    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
 
-        userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImageUrl);
+        ProfileResponseDto responseDto = userService.getProfile(userDetails.getUser().getId());
 
-        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PROFILE_UPDATE);
+        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(
+                SuccessCode.PROFILE_GET,
+                responseDto
+        );
 
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
     }
 
-    @PutMapping("/my/username")
+    @PutMapping("/user/username")
     public ResponseEntity<StatusResponseDto> modifyUsername(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody ModifyUsernameRequestDto requestDto,
@@ -118,14 +88,31 @@ public class UserController {
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
-    @GetMapping("/users/{username}")
-    public ResponseEntity<DataResponseDto<ProfileResponseDto>> getUserInfoByUsername(@PathVariable String username) {
+    @PatchMapping("/user/profile")
+    public ResponseEntity<StatusResponseDto> modifyProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestPart(value = "data", required = false) ModifyProfileRequestDto requestDto,
+            @RequestPart(value = "profileImageUrl", required = false) String profileImageUrl
+    ) {
 
-        ProfileResponseDto responseDto = userService.getUserInfoByUsername(username);
+        userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImageUrl);
 
-        DataResponseDto<ProfileResponseDto> dataResponseDto = new DataResponseDto<>(SuccessCode.PROFILE_GET, responseDto);
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.PROFILE_UPDATE);
 
-        return new ResponseEntity<>(dataResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/user")
+    public ResponseEntity<StatusResponseDto> withdrawal(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response
+    ) {
+
+        userService.withdrawal(userDetails.getUser().getId(), response);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.WITHDRAWAL);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }
