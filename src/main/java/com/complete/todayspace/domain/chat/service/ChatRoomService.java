@@ -1,12 +1,8 @@
 package com.complete.todayspace.domain.chat.service;
 
-import com.complete.todayspace.domain.chat.dto.ChatMessageRequestDto;
-import com.complete.todayspace.domain.chat.dto.ChatMessageResponseDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomRequestDto;
 import com.complete.todayspace.domain.chat.dto.ChatRoomResponseDto;
-import com.complete.todayspace.domain.chat.entity.ChatMessage;
 import com.complete.todayspace.domain.chat.entity.ChatRoom;
-import com.complete.todayspace.domain.chat.repository.ChatRepository;
 import com.complete.todayspace.domain.chat.repository.ChatRoomRepository;
 import com.complete.todayspace.domain.product.entity.Product;
 import com.complete.todayspace.domain.product.service.ProductService;
@@ -22,10 +18,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ChatService {
+public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRepository chatRepository;
     private final ProductService productService;
     private final UserService userService;
 
@@ -64,36 +59,6 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<ChatRoomResponseDto> getChatRoom(Long id) {
         return chatRoomRepository.findByChatRoomWithUserInfo(id);
-    }
-
-    @Transactional
-    public void sendMessage(ChatMessageRequestDto requestDto) {
-
-        ChatMessage chatMessage = new ChatMessage(
-                requestDto.getRoomId(),
-                requestDto.getSender(),
-                requestDto.getMessage()
-        );
-        chatRepository.save(chatMessage);
-
-    }
-
-    @Transactional(readOnly = true)
-    public List<ChatMessageResponseDto> getMessageForChatRoom(Long id, String roomId) {
-
-        if (!chatRoomRepository.existsByRoomIdAndUserId(roomId, id)) {
-            throw new CustomException(ErrorCode.NO_CHAT_ROOM_OR_PERMISSION_DENIED);
-        }
-
-        List<ChatMessage> chatMessages = chatRepository.findByRoomIdOrderBySendDateAsc(roomId);
-
-        return chatMessages.stream()
-                .map( (chatMessage) -> new ChatMessageResponseDto(
-                        chatMessage.getSender(),
-                        chatMessage.getMessage(),
-                        chatMessage.getSendDate()
-                ))
-                .toList();
     }
 
 }
