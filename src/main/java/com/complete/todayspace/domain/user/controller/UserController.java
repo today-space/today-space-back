@@ -22,29 +22,6 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/user/logout")
-    public ResponseEntity<StatusResponseDto> logout(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            HttpServletResponse response
-    ) {
-
-        userService.logout(userDetails.getUser().getId(), response);
-
-        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.LOGOUT);
-
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
-    }
-
-    @PostMapping("/user/token/refresh")
-    public ResponseEntity<StatusResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-
-        userService.refreshToken(request, response);
-
-        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.TOKEN_REFRESH);
-
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
-    }
-
     @GetMapping("/user/{username}")
     public ResponseEntity<DataResponseDto<ProfileResponseDto>> getUserInfoByUsername(@PathVariable String username) {
 
