@@ -1,18 +1,18 @@
 package com.complete.todayspace.domain.user.controller;
 
-import com.complete.todayspace.domain.user.dto.CheckUsernameRequestDto;
 import com.complete.todayspace.domain.user.dto.SignupRequestDto;
 import com.complete.todayspace.domain.user.service.AuthService;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
+import com.complete.todayspace.global.security.UserDetailsImpl;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1")
@@ -31,10 +31,33 @@ public class AuthController {
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
-    @PostMapping("/auth/check")
-    public ResponseEntity<StatusResponseDto> checkUsername(@Valid @RequestBody CheckUsernameRequestDto requestDto) {
+    @PostMapping("/auth/logout")
+    public ResponseEntity<StatusResponseDto> logout(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response
+    ) {
 
-        authService.checkUsername(requestDto);
+        authService.logout(userDetails.getUser().getId(), response);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.LOGOUT);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/auth/token/refresh")
+    public ResponseEntity<StatusResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+
+        authService.refreshToken(request, response);
+
+        StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.TOKEN_REFRESH);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/auth/check/{username}")
+    public ResponseEntity<StatusResponseDto> checkUsername(@PathVariable String username) {
+
+        authService.checkUsername(username);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.CHECK_USERNAME);
 
