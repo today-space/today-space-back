@@ -4,7 +4,7 @@ import com.complete.todayspace.domain.user.dto.LoginRequestDto;
 import com.complete.todayspace.domain.user.entity.UserRefreshToken;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserState;
-import com.complete.todayspace.domain.user.repository.RefreshTokenRepository;
+import com.complete.todayspace.domain.user.repository.UserRefreshTokenRepository;
 import com.complete.todayspace.domain.user.repository.UserRepository;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
@@ -30,17 +30,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRefreshTokenRepository userRefreshTokenRepository;
 
     public JwtAuthenticationFilter(
             JwtProvider jwtProvider,
             UserRepository userRepository,
-            RefreshTokenRepository refreshTokenRepository
+            UserRefreshTokenRepository refreshTokenRepository
     ) {
 
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
-        this.refreshTokenRepository = refreshTokenRepository;
+        this.userRefreshTokenRepository = refreshTokenRepository;
 
         setFilterProcessesUrl("/v1/auth/login");
 
@@ -109,7 +109,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String refreshToken = jwtProvider.generateRefreshToken(username, userRole, user.getId());
         Long expiration = jwtProvider.getExpirationLong(refreshToken);
 
-        refreshTokenRepository.save(new UserRefreshToken(user.getId(), refreshToken, expiration));
+        userRefreshTokenRepository.save(new UserRefreshToken(user.getId(), refreshToken, expiration));
 
         ResponseCookie responseCookie = jwtProvider.createRefreshTokenCookie(refreshToken);
         jwtProvider.addAccessTokenHeader(response, accessToken);

@@ -1,6 +1,6 @@
 package com.complete.todayspace.global.config;
 
-import com.complete.todayspace.domain.user.repository.RefreshTokenRepository;
+import com.complete.todayspace.domain.user.repository.UserRefreshTokenRepository;
 import com.complete.todayspace.domain.user.repository.UserRepository;
 import com.complete.todayspace.global.jwt.JwtProvider;
 import com.complete.todayspace.global.security.UserDetailsServiceImpl;
@@ -33,7 +33,7 @@ public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRefreshTokenRepository userRefreshTokenRepository;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final UserDetailsServiceImpl userDetailsService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
@@ -49,7 +49,7 @@ public class SecurityConfig {
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(
                 jwtProvider,
                 userRepository,
-                refreshTokenRepository
+                userRefreshTokenRepository
         );
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;

@@ -5,7 +5,7 @@ import com.complete.todayspace.domain.oauth.dto.OAuthResponseDto;
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.entity.UserRole;
 import com.complete.todayspace.domain.user.entity.UserState;
-import com.complete.todayspace.domain.user.service.UserService;
+import com.complete.todayspace.domain.user.service.CommonService;
 import com.complete.todayspace.global.jwt.JwtProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,7 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuthService {
 
-    private final UserService userService;
+    private final CommonService userCommonService;
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
     private final JwtProvider jwtProvider;
@@ -66,7 +66,7 @@ public class OAuthService {
 
         User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        userService.saveUser(user);
+        userCommonService.saveUser(user);
 
         return user;
     }
@@ -80,7 +80,7 @@ public class OAuthService {
 
         User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        userService.saveUser(user);
+        userCommonService.saveUser(user);
 
         return user;
     }
@@ -94,7 +94,7 @@ public class OAuthService {
 
         User user = registerOAuthUserIfNeeded(oAuthDto);
 
-        userService.saveUser(user);
+        userCommonService.saveUser(user);
 
         return user;
     }
@@ -117,7 +117,7 @@ public class OAuthService {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
-        userService.saveRefreshToken(user.getId(), refreshToken, expiration);
+        userCommonService.saveRefreshToken(user.getId(), refreshToken, expiration);
 
         return headers;
     }
@@ -251,7 +251,7 @@ public class OAuthService {
     private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
 
         String oAuthId = oAuthDto.getNickname() + oAuthDto.getId();
-        User oAuthUser = userService.findByoAuthId(oAuthId);
+        User oAuthUser = userCommonService.findByoAuthId(oAuthId);
 
         if (oAuthUser == null) {
 
