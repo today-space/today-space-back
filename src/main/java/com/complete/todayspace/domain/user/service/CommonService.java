@@ -71,7 +71,7 @@ public class CommonService {
         }
     }
 
-    public void updateToken(
+    public void updateAllTokenAndSaveRefreshToken(
             HttpServletResponse response,
             Claims userInfo,
             String username,

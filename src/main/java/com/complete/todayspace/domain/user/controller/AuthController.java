@@ -45,9 +45,12 @@ public class AuthController {
     }
 
     @PostMapping("/auth/token/refresh")
-    public ResponseEntity<StatusResponseDto> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<StatusResponseDto> reissueRefreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
 
-        authService.refreshToken(request, response);
+        authService.reissueRefreshToken(request, response);
 
         StatusResponseDto responseDto = new StatusResponseDto(SuccessCode.TOKEN_REFRESH);
 

@@ -53,7 +53,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public void reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = commonService.getRefreshTokenFromHeaderAndCheck(request);
 
@@ -63,7 +63,7 @@ public class AuthService {
         String username = userInfo.getSubject();
         String role = userInfo.get("auth", String.class);
 
-        commonService.updateToken(response, userInfo, username, role, userId, refreshToken);
+        commonService.updateAllTokenAndSaveRefreshToken(response, userInfo, username, role, userId, refreshToken);
 
     }
 

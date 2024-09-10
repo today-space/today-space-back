@@ -64,7 +64,14 @@ public class UserService {
 
         Claims userInfo = commonService.getUserInfoFromToken(refreshToken);
 
-        commonService.updateToken(response, userInfo, requestDto.getUsername(), user.getRole().toString(), id, refreshToken);
+        commonService.updateAllTokenAndSaveRefreshToken(
+                response,
+                userInfo,
+                requestDto.getUsername(),
+                user.getRole().toString(),
+                id,
+                refreshToken
+        );
 
     }
 
@@ -113,7 +120,6 @@ public class UserService {
     private boolean isCheckPassword(String password, String dbPassword) {
         return passwordEncoder.matches(password, dbPassword);
     }
-
 
     @Transactional
     public void withdrawal(Long id, HttpServletResponse response) {
