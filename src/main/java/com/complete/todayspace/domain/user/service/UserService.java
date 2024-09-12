@@ -86,7 +86,7 @@ public class UserService {
 
         if (requestDto != null) {
 
-            validPassword(requestDto, user);
+            validatePassword(requestDto, user);
 
             String encryptedPassword = passwordEncoder.encode(requestDto.getNewPassword());
 
@@ -103,22 +103,32 @@ public class UserService {
         }
     }
 
-    private void validPassword(ModifyProfileRequestDto requestDto, User user) {
-        if (!isCheckPassword(requestDto.getPassword(), user.getPassword())) {
+    private void validatePassword(ModifyProfileRequestDto requestDto, User user) {
+
+        validateCurrentPassword(requestDto.getPassword(), user.getPassword());
+
+        validateNewPasswordMatch(requestDto.getNewPassword(), requestDto.getCheckPassword());
+
+        validateNewPasswordDifferent(requestDto.getPassword(), requestDto.getNewPassword());
+
+    }
+
+    private void validateCurrentPassword(String password, String dbPassword) {
+        if (!passwordEncoder.matches(password, dbPassword)) {
             throw new CustomException(ErrorCode.CHECK_PASSWORD);
-        }
-
-        if (!requestDto.getNewPassword().equals(requestDto.getCheckPassword())) {
-            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
-        }
-
-        if (requestDto.getPassword().equals(requestDto.getNewPassword())) {
-            throw new CustomException(ErrorCode.PASSWORD_SAME_AS_OLD);
         }
     }
 
-    private boolean isCheckPassword(String password, String dbPassword) {
-        return passwordEncoder.matches(password, dbPassword);
+    private void validateNewPasswordMatch(String newPassword, String checkPassword) {
+        if (!newPassword.equals(checkPassword)) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+    }
+
+    private void validateNewPasswordDifferent(String password, String newPassword) {
+        if (password.equals(newPassword)) {
+            throw new CustomException(ErrorCode.PASSWORD_SAME_AS_OLD);
+        }
     }
 
     @Transactional
