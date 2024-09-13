@@ -34,7 +34,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public ProfileResponseDto getUserInfoByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         return new ProfileResponseDto(user.getUsername(), user.getProfileImage());
     }
@@ -143,7 +143,8 @@ public class UserService {
     }
 
     public User findById(Long id) {
-        return userRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        return userRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
 }

@@ -55,7 +55,11 @@ public class OAuthService {
     @Value("${front.url}")
     private String frontURL;
 
+    @Value("${cloud.aws.s3.baseUrl}")
+    private String s3BaseUrl;
+
     private static final String BEARER = "Bearer ";
+    private static final String DEFAULT_PROFILE_IMG_URL = "profile/defaultProfileImg.png";
 
     @Transactional
     public User kakao(String code) throws JsonProcessingException {
@@ -251,25 +255,22 @@ public class OAuthService {
     private User registerOAuthUserIfNeeded(OAuthDto oAuthDto) {
 
         String oAuthId = oAuthDto.getNickname() + oAuthDto.getId();
-        User oAuthUser = userCommonService.findByoAuthId(oAuthId);
 
-        if (oAuthUser == null) {
+        return userCommonService.findByoAuthId(oAuthId)
+                .orElseGet(() -> {
+                    String username = generateRandomUsername();
+                    String password = UUID.randomUUID().toString();
+                    String encryptedPassword = passwordEncoder.encode(password);
 
-            String username = generateRandomUsername();
-            String password = UUID.randomUUID().toString();
-            String encryptedPassword = passwordEncoder.encode(password);
-            oAuthUser = new User(
-                    username,
-                    encryptedPassword,
-                    "https://today-space.s3.ap-northeast-2.amazonaws.com/profile/defaultProfileImg.png",
-                    UserRole.USER,
-                    UserState.ACTIVE,
-                    oAuthId
-            );
-
-        }
-
-        return oAuthUser;
+                    return new User(
+                            username,
+                            encryptedPassword,
+                            s3BaseUrl + DEFAULT_PROFILE_IMG_URL,
+                            UserRole.USER,
+                            UserState.ACTIVE,
+                            oAuthId
+                    );
+                });
     }
 
     private String generateRandomUsername() {
