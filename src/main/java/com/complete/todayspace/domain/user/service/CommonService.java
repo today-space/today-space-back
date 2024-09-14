@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -107,7 +108,8 @@ public class CommonService {
     }
 
     private UserRefreshToken findUserRefreshTokenById(Long id) {
-        return userRefreshTokenRepository.findById(id).orElseThrow( () -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
+        return userRefreshTokenRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.TOKEN_NOT_FOUND));
     }
 
     public void saveRefreshToken(Long userId, String refreshToken, Long expiration) {
@@ -118,8 +120,8 @@ public class CommonService {
 
     }
 
-    public User findByoAuthId(String oAuthId) {
-        return userRepository.findByoAuthId(oAuthId).orElse(null);
+    public Optional<User> findByoAuthId(String oAuthId) {
+        return userRepository.findByoAuthId(oAuthId);
     }
 
     public void saveUser(User user) {
