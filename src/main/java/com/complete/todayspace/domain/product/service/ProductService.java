@@ -3,7 +3,6 @@ package com.complete.todayspace.domain.product.service;
 import com.complete.todayspace.domain.common.S3Provider;
 import com.complete.todayspace.domain.payment.entity.Payment;
 import com.complete.todayspace.domain.payment.entity.State;
-import com.complete.todayspace.domain.payment.repository.PaymentRepository;
 import com.complete.todayspace.domain.payment.service.PaymentService;
 import com.complete.todayspace.domain.product.dto.*;
 import com.complete.todayspace.domain.product.entity.Address;
@@ -15,16 +14,15 @@ import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.wish.repository.WishRepository;
 import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
-
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor

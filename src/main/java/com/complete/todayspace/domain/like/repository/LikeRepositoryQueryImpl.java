@@ -1,7 +1,6 @@
 package com.complete.todayspace.domain.like.repository;
 
 import com.complete.todayspace.domain.post.entitiy.Post;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

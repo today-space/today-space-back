@@ -1,11 +1,11 @@
 package com.complete.todayspace.domain.post.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 @Setter
