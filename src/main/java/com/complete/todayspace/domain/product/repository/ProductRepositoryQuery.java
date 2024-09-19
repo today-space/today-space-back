@@ -2,8 +2,6 @@ package com.complete.todayspace.domain.product.repository;
 
 import com.complete.todayspace.domain.product.dto.ProductResponseDto;
 import com.complete.todayspace.domain.product.entity.Address;
-import com.complete.todayspace.domain.product.entity.Product;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

@@ -2,9 +2,9 @@ package com.complete.todayspace.domain.payment.repository;
 
 import com.complete.todayspace.domain.payment.entity.Payment;
 import com.complete.todayspace.domain.payment.entity.State;
-import com.complete.todayspace.domain.product.entity.Product;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 

@@ -4,10 +4,10 @@ import com.complete.todayspace.domain.product.entity.Address;
 import com.complete.todayspace.domain.product.entity.State;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 public class CreateProductRequestDto {

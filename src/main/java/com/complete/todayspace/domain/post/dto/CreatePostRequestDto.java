@@ -2,9 +2,9 @@ package com.complete.todayspace.domain.post.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.List;
 import lombok.Getter;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Getter
 public class CreatePostRequestDto {

@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface PostRepositoryQuery {
 
-    public PostResponseDto findPostById(Long postId);
+    PostResponseDto findPostById(Long postId);
 
     Page<MyPostResponseDto> findMyPostList(Long userId, Pageable pageable);
 

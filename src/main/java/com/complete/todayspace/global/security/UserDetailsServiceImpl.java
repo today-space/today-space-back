@@ -2,7 +2,6 @@ package com.complete.todayspace.global.security;
 
 import com.complete.todayspace.domain.user.entity.User;
 import com.complete.todayspace.domain.user.repository.UserRepository;
-import com.complete.todayspace.global.exception.CustomException;
 import com.complete.todayspace.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
