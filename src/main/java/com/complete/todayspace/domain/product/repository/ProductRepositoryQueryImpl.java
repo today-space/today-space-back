@@ -55,7 +55,7 @@ public class ProductRepositoryQueryImpl implements ProductRepositoryQuery {
                 )).from(product)
                 .leftJoin(payment).on(payment.product.id.eq(product.id))
                 .where(product.user.id.eq(userId))
-                .orderBy(product.createdAt.desc())
+                .orderBy(product.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

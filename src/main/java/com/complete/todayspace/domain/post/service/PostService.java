@@ -201,7 +201,7 @@ public class PostService {
     public Page<MyPostResponseDto> getMyPostList(Long id, int page) {
 
         int size = 6;
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         Page<MyPostResponseDto> postList = postRepository.findMyPostList(id, pageable);
 

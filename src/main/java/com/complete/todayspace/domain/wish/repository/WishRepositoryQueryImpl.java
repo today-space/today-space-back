@@ -61,7 +61,7 @@ public class WishRepositoryQueryImpl implements WishRepositoryQuery {
                 .join(wish.product, product)
                 .leftJoin(payment).on(payment.product.id.eq(product.id))
                 .where(wish.user.id.eq(userId))
-                .orderBy(wish.createdAt.desc())
+                .orderBy(wish.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
