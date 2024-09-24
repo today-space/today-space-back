@@ -111,7 +111,7 @@ public class PostRepositoryQueryImpl implements PostRepositoryQuery{
                         likeCountSubQuery
                 )).from(post)
                 .where(post.user.id.eq(userId))
-                .orderBy(post.createdAt.desc())
+                .orderBy(post.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

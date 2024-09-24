@@ -70,7 +70,7 @@ public class WishService {
     public Page<ProductResponseDto> getMyWishList(Long id, int page) {
 
         int size = 6;
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         return wishRepository.findMyWishList(id, pageable);
     }

@@ -219,7 +219,7 @@ public class ProductService {
     public Page<ProductResponseDto> getMyProductList(Long id, int page) {
 
         int size = 6;
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 
         return productRepository.findMyProductList(id, pageable);
     }
