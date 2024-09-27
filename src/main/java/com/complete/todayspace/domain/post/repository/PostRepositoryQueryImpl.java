@@ -17,10 +17,11 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.complete.todayspace.domain.hashtag.entity.QHashtag.hashtag;
@@ -118,14 +119,17 @@ public class PostRepositoryQueryImpl implements PostRepositoryQuery{
 
         postList.forEach(this::validateProductImage);
 
-        long total = jpaQueryFactory
-                .select(post.id)
-                .from(post)
-                .where(post.user.id.eq(userId))
-                .fetch()
-                .size();
-
-        return new PageImpl<>(postList, pageable, total);
+        return PageableExecutionUtils.getPage(
+                postList,
+                pageable,
+                () -> Optional.ofNullable(
+                        jpaQueryFactory
+                                .select(post.count())
+                                .from(post)
+                                .where(post.user.id.eq(userId))
+                                .fetchOne()
+                ).orElse(0L)
+        );
     }
 
     private void validateProductImage(MyPostResponseDto postResponseDto) {

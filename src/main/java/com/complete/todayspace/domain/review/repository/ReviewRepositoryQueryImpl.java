@@ -8,11 +8,12 @@ import com.complete.todayspace.domain.user.entity.QUser;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -42,14 +43,17 @@ public class ReviewRepositoryQueryImpl implements ReviewRepositoryQuery {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = jpaQueryFactory
-                .select(review.id)
-                .from(review)
-                .where(review.product.user.id.eq(userId))
-                .fetch()
-                .size();
-
-        return new PageImpl<>(reviewList, pageable, total);
+        return PageableExecutionUtils.getPage(
+                reviewList,
+                pageable,
+                () -> Optional.ofNullable(
+                        jpaQueryFactory
+                                .select(review.count())
+                                .from(review)
+                                .where(review.product.user.id.eq(userId))
+                                .fetchOne()
+                ).orElse(0L)
+        );
     }
 
     @Override
@@ -74,14 +78,17 @@ public class ReviewRepositoryQueryImpl implements ReviewRepositoryQuery {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = jpaQueryFactory
-                .select(review.id)
-                .from(review)
-                .where(review.product.user.username.eq(username))
-                .fetch()
-                .size();
-
-        return new PageImpl<>(reviewList, pageable, total);
+        return PageableExecutionUtils.getPage(
+                reviewList,
+                pageable,
+                () -> Optional.ofNullable(
+                        jpaQueryFactory
+                                .select(review.count())
+                                .from(review)
+                                .where(review.product.user.username.eq(username))
+                                .fetchOne()
+                ).orElse(0L)
+        );
     }
 
 }
