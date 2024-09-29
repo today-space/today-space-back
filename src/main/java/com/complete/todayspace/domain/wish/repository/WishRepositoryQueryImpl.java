@@ -16,18 +16,18 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.support.PageableExecutionUtils;
-
-import static com.complete.todayspace.domain.wish.entity.QWish.wish;
 import static com.complete.todayspace.domain.product.entity.QProduct.product;
+import static com.complete.todayspace.domain.wish.entity.QWish.wish;
 
 @RequiredArgsConstructor
 public class WishRepositoryQueryImpl implements WishRepositoryQuery {
@@ -68,14 +68,17 @@ public class WishRepositoryQueryImpl implements WishRepositoryQuery {
 
         productList.forEach(this::validateProductImage);
 
-        long total = jpaQueryFactory
-                .select(wish.id)
-                .from(wish)
-                .where(wish.user.id.eq(userId))
-                .fetch()
-                .size();
-
-        return new PageImpl<>(productList, pageable, total);
+        return PageableExecutionUtils.getPage(
+                productList,
+                pageable,
+                () -> Optional.ofNullable(
+                        jpaQueryFactory
+                                .select(wish.count())
+                                .from(wish)
+                                .where(wish.user.id.eq(userId))
+                                .fetchOne()
+                ).orElse(0L)
+        );
     }
 
     @Override

@@ -19,10 +19,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -62,14 +64,17 @@ public class ProductRepositoryQueryImpl implements ProductRepositoryQuery {
 
         productList.forEach(this::validateProductImage);
 
-        long total = jpaQueryFactory
-                .select(product.id)
-                .from(product)
-                .where(product.user.id.eq(userId))
-                .fetch()
-                .size();
-
-        return new PageImpl<>(productList, pageable, total);
+        return PageableExecutionUtils.getPage(
+                productList,
+                pageable,
+                () -> Optional.ofNullable(
+                        jpaQueryFactory
+                                .select(product.count())
+                                .from(product)
+                                .where(product.user.id.eq(userId))
+                                .fetchOne()
+                ).orElse(0L)
+        );
     }
 
     @Override
