@@ -19,14 +19,16 @@ public class ChatRoomRepositoryQueryImpl implements ChatRoomRepositoryQuery {
 
     @Override
     public boolean existsByRoomIdAndUserId(String roomId, Long userId) {
-        int count = jpaQueryFactory.selectFrom(QChatRoom.chatRoom)
+
+        Integer count = jpaQueryFactory
+                .selectOne()
+                .from(QChatRoom.chatRoom)
                 .where(QChatRoom.chatRoom.roomId.eq(roomId)
                         .and(QChatRoom.chatRoom.seller.eq(userId)
                                 .or(QChatRoom.chatRoom.buyer.eq(userId))))
-                .fetch()
-                .size();
+                .fetchFirst();
 
-        return count > 0;
+        return count != null;
     }
 
     @Override
