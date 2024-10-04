@@ -5,6 +5,8 @@ import com.complete.todayspace.domain.user.service.UserService;
 import com.complete.todayspace.global.dto.DataResponseDto;
 import com.complete.todayspace.global.dto.StatusResponseDto;
 import com.complete.todayspace.global.entity.SuccessCode;
+import com.complete.todayspace.global.exception.CustomException;
+import com.complete.todayspace.global.exception.ErrorCode;
 import com.complete.todayspace.global.security.UserDetailsImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -71,6 +73,10 @@ public class UserController {
             @Valid @RequestPart(value = "data", required = false) ModifyProfileRequestDto requestDto,
             @RequestPart(value = "profileImageUrl", required = false) String profileImageUrl
     ) {
+
+        if (requestDto == null && profileImageUrl == null) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
 
         userService.modifyProfile(userDetails.getUser().getId(), requestDto, profileImageUrl);
 

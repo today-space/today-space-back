@@ -80,10 +80,6 @@ public class UserService {
 
         User user = findById(id);
 
-        if (requestDto == null && profileImageUrl == null) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
-        }
-
         if (requestDto != null) {
 
             validatePassword(requestDto, user);
